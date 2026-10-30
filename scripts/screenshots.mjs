@@ -38,6 +38,7 @@ const SHOTS = [
     action: async (p) => p.getByRole("button", { name: "Thêm sự kiện" }).first().click(),
   },
   { name: "settings", path: "/settings?tab=notifications" },
+  { name: "settings-data", path: "/settings?tab=data" },
   { name: "home", path: "/" },
 ];
 

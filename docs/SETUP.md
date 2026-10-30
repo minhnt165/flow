@@ -93,8 +93,7 @@ pnpm supabase db push                        # chạy toàn bộ supabase/migrat
 pnpm supabase secrets set `
   TELEGRAM_BOT_TOKEN=<token BotFather> `
   TELEGRAM_WEBHOOK_SECRET=<webhook secret> `
-  CRON_SECRET=<cron secret> `
-  APP_URL=http://localhost:3000
+  CRON_SECRET=<cron secret>
 ```
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` và `SUPABASE_SERVICE_ROLE_KEY` đã có sẵn trong Edge Functions, không cần set.
@@ -141,7 +140,6 @@ pnpm dev     # http://localhost:3000
 2. Environment Variables: nhập 4 biến như trong `.env.local`, với `NEXT_PUBLIC_SITE_URL=https://<domain>`.
 3. Cập nhật lại các URL:
    - Supabase → Authentication → URL Configuration: Site URL và Redirect URLs dùng domain Vercel.
-   - `pnpm supabase secrets set APP_URL=https://<domain>`: link trong tin nhắn bot trỏ về web.
 
 ## Rủi ro cần biết
 

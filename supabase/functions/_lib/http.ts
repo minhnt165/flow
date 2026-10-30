@@ -10,5 +10,3 @@ export function isCronRequest(req: Request) {
   const secret = Deno.env.get("CRON_SECRET");
   return Boolean(secret) && req.headers.get("x-cron-secret") === secret;
 }
-
-export const APP_URL = Deno.env.get("APP_URL") ?? "";

@@ -437,6 +437,7 @@ export function createDemoClient(): SupabaseClient {
         data: { user: { id: DEMO_USER.id, email: DEMO_USER.email } },
         error: null,
       }),
+      signOut: async () => ({ error: null }),
     },
   };
   return client as unknown as SupabaseClient;

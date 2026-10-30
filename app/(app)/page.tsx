@@ -1,10 +1,13 @@
-import { Page, PageHeader } from "@/components/layout/page";
-import { t } from "@/messages/vi";
+import { Suspense } from "react";
+import { HomeView } from "@/components/home/home-view";
+import { Page } from "@/components/layout/page";
 
 export default function HomePage() {
   return (
     <Page>
-      <PageHeader title={t.nav.home} />
+      <Suspense>
+        <HomeView />
+      </Suspense>
     </Page>
   );
 }

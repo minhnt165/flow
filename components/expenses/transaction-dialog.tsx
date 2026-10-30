@@ -58,19 +58,26 @@ function TransactionForm() {
   const { create, update, remove, createRule } = useTransactionMutations();
   const editing = tx.editing;
 
-  const [s, setS] = useState(() => {
+  const [state, setS] = useState(() => {
     const init = initialState(editing, tx.mode, tx.preset, defaultFund?.id);
     if (init.mode === "transfer" && !init.toFundId) {
       init.toFundId = funds.find((f) => f.id !== init.fundId)?.id;
     }
     return init;
   });
+  // Mở hộp thoại trước khi danh sách quỹ tải xong: quỹ mặc định / quỹ khác làm giá trị dự phòng.
+  const fallbackFrom = defaultFund?.id ?? funds[0]?.id;
+  const s = {
+    ...state,
+    fundId: state.fundId ?? fallbackFrom,
+    toFundId: state.toFundId ?? funds.find((f) => f.id !== (state.fundId ?? fallbackFrom))?.id,
+  };
   const [amountText, setAmountText] = useState(s.amount ? formatAmountInput(String(s.amount)) : "");
   const [error, setError] = useState<string>();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const set = (patch: Partial<typeof s>) => setS((prev) => ({ ...prev, ...patch }));
+  const set = (patch: Partial<typeof state>) => setS((prev) => ({ ...prev, ...patch }));
   const setAmount = (n: number) => {
     set({ amount: n });
     setAmountText(n ? formatAmountInput(String(n)) : "");

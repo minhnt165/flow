@@ -19,7 +19,7 @@ import type { MonthSummary } from "@/lib/supabase/types";
 import { t } from "@/messages/vi";
 import { useUi } from "@/stores/ui";
 
-function BudgetHighlight() {
+export function BudgetHighlight() {
   const { month, isCurrent } = useMonth();
   const profile = useProfile();
   const summary = useMonthSummary(profile.data?.id, month);

@@ -1,0 +1,173 @@
+"use client";
+
+import { CalendarHeart, ChevronRight, PiggyBank, Plus } from "lucide-react";
+import Link from "next/link";
+import { IconTile } from "@/components/common/icon-tile";
+import { ProgressBar } from "@/components/common/progress-bar";
+import { ProgressRing } from "@/components/common/progress-ring";
+import { CardSkeleton, EmptyState } from "@/components/common/states";
+import { BudgetHighlight } from "@/components/expenses/overview";
+import { TransactionList } from "@/components/expenses/transaction-list";
+import { PageHeader } from "@/components/layout/page";
+import { Button } from "@/components/ui/button";
+import { useCountdowns } from "@/hooks/use-countdowns";
+import { useGoals } from "@/hooks/use-funds";
+import { useProfile } from "@/hooks/use-profile";
+import { useTransactions } from "@/hooks/use-transactions";
+import { tone } from "@/lib/colors";
+import { APP_TZ, formatLongDate, localDate } from "@/lib/dates";
+import { formatMillions } from "@/lib/money";
+import { t } from "@/messages/vi";
+import { useUi } from "@/stores/ui";
+
+function NextCountdown() {
+  const q = useCountdowns();
+  const openCountdown = useUi((s) => s.openCountdown);
+  if (q.isLoading) return <CardSkeleton />;
+  const next = (q.data ?? [])
+    .filter((c) => !c.is_past)
+    .sort((a, b) => a.days_left - b.days_left)[0];
+  if (!next) {
+    return (
+      <div className="card">
+        <EmptyState
+          icon={CalendarHeart}
+          title={t.home.noEvent}
+          className="py-6"
+          action={
+            <Button variant="secondary" size="sm" onClick={() => openCountdown(null)}>
+              <Plus className="size-4" aria-hidden />
+              {t.home.addEvent}
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+  return (
+    <Link
+      href="/countdowns"
+      className="flex items-center gap-[18px] card p-6 text-text no-underline hover:border-border-strong hover:text-text"
+    >
+      <div className="flex min-w-0 grow flex-col gap-2">
+        <span className="text-[11px] font-semibold tracking-[1.2px] text-accent uppercase">
+          {t.home.nextEvent}
+        </span>
+        <span className="line-clamp-2 font-display text-[22px] leading-tight font-bold tracking-[-0.3px]">
+          {next.title}
+        </span>
+        <span className="text-[13px] text-muted-foreground">
+          {formatLongDate(next.next_occurrence)}
+        </span>
+      </div>
+      <ProgressRing value={next.elapsed_pct} size={104} stroke={9} color={tone(next.color).fg}>
+        <span className="font-display text-[34px] font-bold tracking-[-1.5px]">
+          {next.days_left}
+        </span>
+        <span className="mt-1 text-[11px] text-muted-foreground">{t.countdowns.daysLeft}</span>
+      </ProgressRing>
+    </Link>
+  );
+}
+
+function GoalsCard() {
+  const q = useGoals();
+  const openFund = useUi((s) => s.openFund);
+  if (q.isLoading) return <CardSkeleton />;
+  const goals = (q.data ?? []).slice(0, 3);
+  return (
+    <div className="flex flex-col gap-3 card p-6">
+      <div className="flex items-baseline justify-between">
+        <h2 className="m-0 text-[15px] font-semibold">{t.home.goals}</h2>
+        <Link href="/expenses/funds" className="text-[13px] font-medium no-underline">
+          {t.home.seeAll}
+        </Link>
+      </div>
+      {goals.length === 0 ? (
+        <EmptyState
+          icon={PiggyBank}
+          title={t.home.noGoals}
+          className="py-4"
+          action={
+            <Button variant="secondary" size="sm" onClick={() => openFund(null)}>
+              {t.home.createGoal}
+            </Button>
+          }
+        />
+      ) : (
+        goals.map((g) => (
+          <Link
+            key={g.fund_id}
+            href={`/expenses/funds/${g.fund_id}`}
+            className="flex items-center gap-3 rounded-2xl py-1.5 text-text no-underline hover:text-text"
+          >
+            <IconTile icon={g.icon} color={g.color} size={36} />
+            <span className="flex min-w-0 grow flex-col gap-1.5">
+              <span className="flex justify-between gap-2 text-sm">
+                <span className="truncate font-medium">{g.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{Math.round(g.pct)}%</span>
+              </span>
+              <ProgressBar
+                value={g.pct}
+                color={tone(g.color).fg}
+                marker={g.behind_schedule ? g.expected_pct : null}
+              />
+              {g.per_period ? (
+                <span className="text-[11px] text-muted-foreground">
+                  {t.home.goalNeed(formatMillions(g.per_period))}
+                </span>
+              ) : null}
+            </span>
+            <ChevronRight className="size-4 shrink-0 text-dim" aria-hidden />
+          </Link>
+        ))
+      )}
+    </div>
+  );
+}
+
+function RecentCard() {
+  const q = useTransactions({ limit: 5 });
+  return (
+    <div className="relative flex flex-col md:card md:px-6 md:pt-2 md:pb-3">
+      <div className="flex items-center justify-between pb-3 md:py-4">
+        <h2 className="m-0 text-[15px] font-semibold">{t.home.recent}</h2>
+        <Link href="/expenses/transactions" className="text-[13px] font-medium no-underline">
+          {t.home.seeAll}
+        </Link>
+      </div>
+      <TransactionList
+        transactions={q.data}
+        isLoading={q.isLoading}
+        isError={q.isError}
+        onRetry={() => q.refetch()}
+      />
+    </div>
+  );
+}
+
+export function HomeView() {
+  const profile = useProfile();
+  const openTx = useUi((s) => s.openTx);
+  const name = profile.data?.display_name ?? "";
+  return (
+    <>
+      <PageHeader
+        title={name ? t.home.greeting(name) : t.nav.home}
+        subtitle={formatLongDate(localDate(new Date(), APP_TZ))}
+        actions={
+          <Button className="pr-[18px] pl-3.5" onClick={() => openTx("expense")}>
+            <Plus className="size-[18px]" strokeWidth={2.5} aria-hidden />
+            {t.expenses.add}
+          </Button>
+        }
+      />
+      <div className="relative grid grid-cols-1 gap-5 md:grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))]">
+        <BudgetHighlight />
+        <NextCountdown />
+        <GoalsCard />
+      </div>
+      <RecentCard />
+    </>
+  );
+}

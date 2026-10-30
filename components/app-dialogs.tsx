@@ -23,6 +23,14 @@ export function AppDialogs() {
       e.preventDefault();
       s.openTx("expense");
     };
+    // Shortcut PWA "Thêm giao dịch": /expenses?add=1
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("add") === "1") {
+      useUi.getState().openTx("expense");
+      params.delete("add");
+      const qs = params.toString();
+      window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
+    }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
