@@ -8,3 +8,4 @@ playwright-report
 test-results
 public/sw.js
 app/fonts.css
+supabase/functions-dist

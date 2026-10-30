@@ -7,7 +7,7 @@ Web app quản lý cá nhân cho một người dùng Việt Nam: chi tiêu, qu�
 ## Chạy local
 
 ```powershell
-$env:NODE_OPTIONS="--use-system-ca"   # chỉ cần trên mạng có proxy TLS (máy công ty)
+$env:NODE_OPTIONS="--use-system-ca"   # cho pnpm install trên mạng có proxy TLS; pnpm dev/start đã tự đặt
 pnpm install
 Copy-Item .env.local.example .env.local   # điền giá trị, xem docs/SETUP.md
 pnpm dev                                   # http://localhost:3000
@@ -34,6 +34,7 @@ Chế độ demo (`NEXT_PUBLIC_DEMO_MODE=1`) thay client Supabase bằng kho d�
 | `pnpm test:e2e`                | Playwright 3 luồng: thêm chi tiêu, chuyển quỹ, tạo quỹ mục tiêu          |
 | `pnpm db:push`                 | Đẩy `supabase/migrations` lên project đã link                            |
 | `pnpm db:types`                | Sinh type từ schema thật vào `lib/supabase/database.types.ts`            |
+| `pnpm functions:bundle`        | Gộp mỗi Edge Function thành một file để dán vào Supabase Dashboard       |
 | `node scripts/screenshots.mjs` | Chụp các trang chính (desktop + mobile) từ `dev:demo` để so với thiết kế |
 | `node scripts/gen-icons.mjs`   | Sinh lại icon PWA / apple-touch từ logo                                  |
 
@@ -65,6 +66,8 @@ $env:E2E_BASE_URL="http://localhost:3000"; $env:E2E_EMAIL="..."; $env:E2E_PASSWO
 Không đặt service role key, bot token hay secret nào trong `.env.local` hoặc commit lên git.
 
 ## Deploy
+
+Không dùng được Supabase CLI (ví dụ trên mạng công ty) thì làm toàn bộ trên Dashboard theo [docs/SETUP.md](docs/SETUP.md) mục 5–6. Cách này dùng SQL Editor cho migration và `pnpm functions:bundle` để có file dán vào editor Edge Functions. Các lệnh dưới đây là cách làm bằng CLI.
 
 ### Database
 

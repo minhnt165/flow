@@ -53,3 +53,6 @@ supabase/.branches/
 
 # ?nh ch?p m�n h�nh so thi?t k?
 /screenshots/
+
+# Edge Functions gộp một file để dán vào Supabase Dashboard (pnpm functions:bundle)
+supabase/functions-dist

@@ -18,6 +18,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "design/**",
+      "supabase/functions-dist/**",
       "next-env.d.ts",
       "public/sw.js",
       "playwright-report/**",
