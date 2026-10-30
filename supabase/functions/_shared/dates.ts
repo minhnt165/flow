@@ -13,17 +13,29 @@ type Parts = {
   weekday: number;
 };
 
+// Tạo Intl.DateTimeFormat khá tốn: giữ một bản cho mỗi múi giờ.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+function formatterFor(tz: string) {
+  let fmt = formatters.get(tz);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+      weekday: "short",
+    });
+    formatters.set(tz, fmt);
+  }
+  return fmt;
+}
+
 function parts(date: Date, tz = APP_TZ): Parts {
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-    weekday: "short",
-  });
+  const fmt = formatterFor(tz);
   const map: Record<string, string> = {};
   for (const p of fmt.formatToParts(date)) map[p.type] = p.value;
   const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(map.weekday);

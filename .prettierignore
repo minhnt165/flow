@@ -7,3 +7,4 @@ supabase/config.toml
 playwright-report
 test-results
 public/sw.js
+app/fonts.css

@@ -1,12 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { preload } from "react-dom";
 import { Providers } from "@/components/providers";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { t } from "@/messages/vi";
-import "@fontsource/be-vietnam-pro/400.css";
-import "@fontsource/be-vietnam-pro/500.css";
-import "@fontsource/be-vietnam-pro/600.css";
-import "@fontsource/space-grotesk/500.css";
-import "@fontsource/space-grotesk/700.css";
+import "./fonts.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +21,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// Font dùng ngay ở màn đầu (chữ thường + số tiền lớn): tải sớm để giảm LCP.
+const PRELOAD_FONTS = [
+  "/fonts/be-vietnam-pro-latin-400-normal.woff2",
+  "/fonts/be-vietnam-pro-vietnamese-400-normal.woff2",
+  "/fonts/space-grotesk-latin-700-normal.woff2",
+];
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  PRELOAD_FONTS.forEach((href) =>
+    preload(href, { as: "font", type: "font/woff2", crossOrigin: "anonymous" }),
+  );
   return (
     <html lang="vi">
       <body>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { useUserId } from "@/components/session";
 import { qk, TRANSACTION_DEPENDENTS } from "@/lib/query-keys";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { getMonthSummary } from "@/lib/supabase/reports";
@@ -26,7 +27,8 @@ export function useTransactions(filter: TransactionFilter, enabled = true) {
   });
 }
 
-export function useMonthSummary(userId: string | undefined, month: string) {
+export function useMonthSummary(month: string) {
+  const userId = useUserId();
   return useQuery({
     queryKey: qk.summary(month),
     queryFn: () => getMonthSummary(sb(), userId!, month),

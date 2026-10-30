@@ -10,7 +10,6 @@ import { SearchBox, TransactionList } from "@/components/expenses/transaction-li
 import { useFundMonth } from "@/hooks/use-funds";
 import { useLookups } from "@/hooks/use-lookups";
 import { useMonth } from "@/hooks/use-month";
-import { useProfile } from "@/hooks/use-profile";
 import { useMonthSummary, useRecurringRules, useTransactions } from "@/hooks/use-transactions";
 import { tone } from "@/lib/colors";
 import { APP_TZ, daysBetween, formatDayMonth, formatMonth, localDate } from "@/lib/dates";
@@ -21,8 +20,7 @@ import { useUi } from "@/stores/ui";
 
 export function BudgetHighlight() {
   const { month, isCurrent } = useMonth();
-  const profile = useProfile();
-  const summary = useMonthSummary(profile.data?.id, month);
+  const summary = useMonthSummary(month);
   const budgets = useFundMonth(month);
   const { defaultFund } = useLookups();
   const openFund = useUi((s) => s.openFund);
@@ -106,8 +104,7 @@ function topCategories(summary: MonthSummary | undefined) {
 
 function CategoryCard() {
   const { month } = useMonth();
-  const profile = useProfile();
-  const summary = useMonthSummary(profile.data?.id, month);
+  const summary = useMonthSummary(month);
   if (summary.isLoading) return <CardSkeleton />;
   const items = topCategories(summary.data);
 

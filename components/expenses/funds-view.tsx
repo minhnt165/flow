@@ -9,7 +9,6 @@ import { useCountdowns } from "@/hooks/use-countdowns";
 import { useFundMonth, useFunds, useGoals } from "@/hooks/use-funds";
 import { useLookups } from "@/hooks/use-lookups";
 import { useMonth } from "@/hooks/use-month";
-import { useProfile } from "@/hooks/use-profile";
 import { useMonthSummary, useTransactions } from "@/hooks/use-transactions";
 import { tone } from "@/lib/colors";
 import { formatDateTime, formatMonth } from "@/lib/dates";
@@ -21,8 +20,7 @@ import { useUi } from "@/stores/ui";
 function SummaryCard() {
   const { month } = useMonth();
   const funds = useFunds();
-  const profile = useProfile();
-  const summary = useMonthSummary(profile.data?.id, month);
+  const summary = useMonthSummary(month);
   if (funds.isLoading) return <CardSkeleton className="flex-[1_1_320px]" />;
   const list = funds.data ?? [];
   const total = list.reduce((s, f) => s + f.balance, 0);
