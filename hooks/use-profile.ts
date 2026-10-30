@@ -6,8 +6,12 @@ import { getProfile, updateProfile } from "@/lib/supabase/profiles";
 import type { Profile, ProfileUpdate } from "@/lib/supabase/types";
 import { qk } from "@/lib/query-keys";
 
-export function useProfile() {
-  return useQuery({ queryKey: qk.profile, queryFn: () => getProfile(getBrowserClient()) });
+export function useProfile(opts: { refetchInterval?: number | false } = {}) {
+  return useQuery({
+    queryKey: qk.profile,
+    queryFn: () => getProfile(getBrowserClient()),
+    refetchInterval: opts.refetchInterval,
+  });
 }
 
 export function useUpdateProfile() {
