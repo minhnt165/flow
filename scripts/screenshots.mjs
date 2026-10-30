@@ -28,11 +28,8 @@ const SHOTS = [
     path: "/expenses/funds",
     action: async (p) => p.getByRole("button", { name: "Tạo quỹ mới" }).click(),
   },
-  {
-    name: "goal",
-    path: "/expenses/funds",
-    action: async (p) => p.getByRole("link", { name: /Quỹ Tết/ }).click(),
-  },
+  // id cố định của "Quỹ Tết 2027" trong dữ liệu demo
+  { name: "goal", path: "/expenses/funds/fund-0019-demo" },
   { name: "transactions", path: "/expenses/transactions" },
   { name: "countdowns", path: "/countdowns" },
   {

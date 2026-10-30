@@ -24,6 +24,9 @@ export function ExpensesHeader() {
   const onFunds = pathname.startsWith("/expenses/funds");
   const qs = params.get("month") ? `?month=${params.get("month")}` : "";
 
+  // Trang chi tiết quỹ có breadcrumb riêng.
+  if (/^\/expenses\/funds\/[^/]+$/.test(pathname)) return null;
+
   return (
     <div className="relative flex flex-col gap-4">
       <PageHeader
