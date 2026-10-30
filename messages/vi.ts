@@ -70,6 +70,18 @@ export const vi = {
       userExists: "Email này đã có tài khoản.",
     },
   },
+  onboarding: {
+    title: "Thiết lập nhanh",
+    greeting: (name: string) => `Chào ${name}, chỉ hai câu hỏi thôi.`,
+    salaryDay: "Ngày nhận lương hằng tháng",
+    salaryDayHint:
+      "Flow dùng ngày này để tính số kỳ lương còn lại và tự động góp vào quỹ. Tháng ngắn hơn thì tính ngày cuối tháng.",
+    budget: "Ngân sách tháng cho quỹ Sinh hoạt",
+    budgetHint: "Không bắt buộc, có thể đặt sau ở Chi tiêu → Quỹ.",
+    dayLabel: (d: number) => `Ngày ${d}`,
+    submit: "Bắt đầu dùng Flow",
+    errorDay: "Chọn ngày nhận lương.",
+  },
   common: {
     soonTitle: "Sắp ra mắt",
     soonBody:

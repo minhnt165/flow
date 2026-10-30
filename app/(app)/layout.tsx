@@ -15,6 +15,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect("/login");
 
   const profile = await getProfile(sb).catch(() => null);
+  // Lần đầu đăng nhập: hỏi ngày nhận lương trước khi vào app.
+  if (profile && profile.salary_day === null) redirect("/onboarding");
   const email = user.email ?? "";
   const name = profile?.display_name || email.split("@")[0] || "Bạn";
 
