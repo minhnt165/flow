@@ -19,7 +19,7 @@ import { formatMillions, formatVND } from "@/lib/money";
 import type { Fund, FundInput, FundKind, PaletteColor } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
-import { useUi } from "@/stores/ui";
+import { useUi, type FundPreset } from "@/stores/ui";
 import { planGoal } from "@/supabase/functions/_shared/goal.ts";
 
 const KINDS: FundKind[] = ["monthly_budget", "goal", "free"];
@@ -40,17 +40,17 @@ type FormState = {
   autoAmount: number;
 };
 
-function initial(f: Fund | null): FormState {
+function initial(f: Fund | null, preset: FundPreset | null): FormState {
   return {
-    name: f?.name ?? "",
-    icon: f?.icon ?? "piggy-bank",
-    color: (f?.color as PaletteColor) ?? "sky",
+    name: f?.name ?? preset?.name ?? "",
+    icon: f?.icon ?? preset?.icon ?? "piggy-bank",
+    color: (f?.color as PaletteColor) ?? preset?.color ?? "sky",
     kind: f?.kind ?? "goal",
     monthlyBudget: f?.monthly_budget ?? 0,
     target: f?.target_amount ?? 0,
     deadline: f?.target_date ?? "",
-    countdownId: f?.countdown_id ?? null,
-    useCountdown: Boolean(f?.countdown_id && !f?.target_date),
+    countdownId: f?.countdown_id ?? preset?.countdownId ?? null,
+    useCountdown: Boolean((f?.countdown_id && !f?.target_date) || preset?.countdownId),
     auto: Boolean(f?.auto_contribution),
     autoAmount: f?.auto_contribution ?? 0,
   };
@@ -69,13 +69,14 @@ function PlanRow({ label, value, tone: color }: { label: string; value: string; 
 
 function FundForm() {
   const editing = useUi((s) => s.fund.editing);
+  const preset = useUi((s) => s.fund.preset);
   const closeFund = useUi((s) => s.closeFund);
   const save = useSaveFund();
   const archive = useArchiveFund();
   const funds = useFunds();
   const countdowns = useCountdowns();
   const ctx = useSalaryContext(editing?.id);
-  const [s, setS] = useState<FormState>(() => initial(editing));
+  const [s, setS] = useState<FormState>(() => initial(editing, preset));
   const [error, setError] = useState<string>();
   const [confirmArchive, setConfirmArchive] = useState(false);
   const set = (p: Partial<FormState>) => setS((prev) => ({ ...prev, ...p }));

@@ -1,9 +1,17 @@
 "use client";
 
 import { create } from "zustand";
-import type { CountdownView, Fund, Transaction } from "@/lib/supabase/types";
+import type { CountdownView, Fund, PaletteColor, Transaction } from "@/lib/supabase/types";
 
 export type TxMode = "expense" | "income" | "transfer";
+
+/** Giá trị điền sẵn khi tạo quỹ mục tiêu từ một countdown ("Gắn ngân sách"). */
+export type FundPreset = {
+  name: string;
+  icon: string;
+  color: PaletteColor;
+  countdownId: string;
+};
 
 type TxDialog = {
   open: boolean;
@@ -20,8 +28,8 @@ type UiState = {
   editTx: (tx: Transaction) => void;
   closeTx: () => void;
 
-  fund: { open: boolean; editing: Fund | null };
-  openFund: (editing?: Fund | null) => void;
+  fund: { open: boolean; editing: Fund | null; preset: FundPreset | null };
+  openFund: (editing?: Fund | null, preset?: FundPreset | null) => void;
   closeFund: () => void;
 
   countdown: { open: boolean; editing: CountdownView | null };
@@ -40,8 +48,8 @@ export const useUi = create<UiState>((set) => ({
     })),
   closeTx: () => set((s) => ({ tx: { ...s.tx, open: false } })),
 
-  fund: { open: false, editing: null },
-  openFund: (editing = null) => set({ fund: { open: true, editing } }),
+  fund: { open: false, editing: null, preset: null },
+  openFund: (editing = null, preset = null) => set({ fund: { open: true, editing, preset } }),
   closeFund: () => set((s) => ({ fund: { ...s.fund, open: false } })),
 
   countdown: { open: false, editing: null },

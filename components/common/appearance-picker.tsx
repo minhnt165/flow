@@ -19,6 +19,7 @@ export function AppearancePicker({
   label,
   iconLabel,
   colorLabel,
+  showColors = true,
 }: {
   icon: string;
   color: PaletteColor;
@@ -26,6 +27,7 @@ export function AppearancePicker({
   label: string;
   iconLabel: string;
   colorLabel: string;
+  showColors?: boolean;
 }) {
   return (
     <Popover>
@@ -40,28 +42,30 @@ export function AppearancePicker({
         })()}
       </PopoverTrigger>
       <PopoverContent align="end" className="flex w-[300px] flex-col gap-4 p-4">
-        <div className="flex flex-col gap-2">
-          <span className="label-caps">{colorLabel}</span>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={colorLabel}>
-            {PALETTE.map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="radio"
-                aria-checked={c === color}
-                aria-label={t.colors[c]}
-                onClick={() => onChange({ color: c })}
-                className="flex size-9 cursor-pointer items-center justify-center rounded-full border-2"
-                style={{
-                  background: tone(c).fg,
-                  borderColor: c === color ? "var(--text)" : "transparent",
-                }}
-              >
-                {c === color && <Check className="size-4 text-bg" aria-hidden />}
-              </button>
-            ))}
+        {showColors && (
+          <div className="flex flex-col gap-2">
+            <span className="label-caps">{colorLabel}</span>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={colorLabel}>
+              {PALETTE.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={c === color}
+                  aria-label={t.colors[c]}
+                  onClick={() => onChange({ color: c })}
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-full border-2"
+                  style={{
+                    background: tone(c).fg,
+                    borderColor: c === color ? "var(--text)" : "transparent",
+                  }}
+                >
+                  {c === color && <Check className="size-4 text-bg" aria-hidden />}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         <div className="flex flex-col gap-2">
           <span className="label-caps">{iconLabel}</span>
           <div className="grid grid-cols-6 gap-1.5" role="radiogroup" aria-label={iconLabel}>
