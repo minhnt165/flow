@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flow
 
-## Getting Started
+Web app quản lý cá nhân (chi tiêu, quỹ, mục tiêu quỹ, countdown ngày quan trọng, nhắc qua Telegram) cho một người dùng Việt Nam. Chạy tốt trên desktop và điện thoại, cài được như PWA.
 
-First, run the development server:
+**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · shadcn/ui (Base UI) · TanStack Query · Zustand · Supabase (Postgres, Auth, RLS, Edge Functions, pg_cron) · Vitest · Playwright.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Chạy local
+
+```powershell
+$env:NODE_OPTIONS="--use-system-ca"   # chỉ cần trên mạng công ty có proxy TLS
+pnpm install
+Copy-Item .env.local.example .env.local   # điền giá trị, xem docs/SETUP.md
+pnpm dev                                   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Chưa có Supabase thì trang đăng nhập vẫn mở được và hiện cảnh báo thiếu cấu hình. Các bước tạo project Supabase, Google OAuth và bot Telegram nằm trong [docs/SETUP.md](docs/SETUP.md).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Lệnh
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Lệnh             | Việc                                                          |
+| ---------------- | ------------------------------------------------------------- |
+| `pnpm dev`       | Dev server (Turbopack)                                        |
+| `pnpm build`     | Build production                                              |
+| `pnpm lint`      | ESLint                                                        |
+| `pnpm typecheck` | TypeScript                                                    |
+| `pnpm test`      | Vitest: định dạng tiền, parser tin nhắn, test SQL (PGlite)    |
+| `pnpm test:e2e`  | Playwright (cần Supabase thật, xem mục E2E)                   |
+| `pnpm db:push`   | Đẩy `supabase/migrations` lên project đã link                 |
+| `pnpm db:types`  | Sinh type từ schema thật vào `lib/supabase/database.types.ts` |
 
-## Learn More
+## Biến môi trường
 
-To learn more about Next.js, take a look at the following resources:
+| Biến                                | Ở đâu                                  | Ghi chú                                         |
+| ----------------------------------- | -------------------------------------- | ----------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`          | `.env.local`, Vercel                   | `https://<ref>.supabase.co`                     |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`     | `.env.local`, Vercel                   | anon hoặc publishable key                       |
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | `.env.local`, Vercel                   | username bot, không có `@`                      |
+| `NEXT_PUBLIC_SITE_URL`              | `.env.local`, Vercel                   | URL gốc của web                                 |
+| `TELEGRAM_BOT_TOKEN`                | Supabase secrets                       | token từ BotFather                              |
+| `TELEGRAM_WEBHOOK_SECRET`           | Supabase secrets                       | so với header `X-Telegram-Bot-Api-Secret-Token` |
+| `CRON_SECRET`                       | Supabase secrets + Vault `cron_secret` | pg_cron gửi kèm khi gọi job                     |
+| `APP_URL`                           | Supabase secrets                       | link trong tin nhắn bot                         |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Không đặt service role key, bot token hay secret nào trong `.env.local` hoặc commit lên git.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cấu trúc
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/                  Route Next.js: (auth) đăng nhập, (app) các module sau đăng nhập
+components/           ui/ (shadcn đã tuỳ biến), layout/, common/, theo module
+lib/supabase/         Mọi truy vấn Supabase, mỗi bảng một file
+messages/vi.ts        Mọi chuỗi giao diện
+supabase/migrations/  Schema, RLS, view, function (mọi thay đổi schema là migration)
+supabase/functions/   Edge Functions; _shared/ là code thuần dùng chung với web và test
+docs/SETUP.md         Checklist setup Supabase, Google OAuth, Telegram
+design/               File thiết kế tham chiếu
+```

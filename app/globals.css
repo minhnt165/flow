@@ -1,26 +1,162 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+/* Flow chỉ có giao diện tối: mọi màu đi qua token dưới đây, component không hard-code màu. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0e0f14;
+  --surface: #14161d;
+  --surface-2: #1e2028;
+  --border: #262933;
+  --text: #f4f4f6;
+  --muted: #a3a7b7;
+  --dim: #7e8292;
+  --accent: #d4f04a;
+  --accent-hover: #e6ff6b;
+  --soft: #c9ccd6;
+  --switch-off: #2c2f3a;
+  --border-strong: #2c2f3a;
+  --overlay: rgb(8 9 12 / 0.74);
+  --danger: #fca5a5;
+
+  /* Màu danh mục / quỹ và nền ô icon cùng tông */
+  --cat-sky: #7dd3fc;
+  --cat-sky-bg: #152431;
+  --cat-orange: #fdba74;
+  --cat-orange-bg: #2e2218;
+  --cat-green: #86efac;
+  --cat-green-bg: #152a22;
+  --cat-violet: #c4b5fd;
+  --cat-violet-bg: #221e35;
+  --cat-pink: #fda4af;
+  --cat-pink-bg: #301c27;
+  --cat-red: #fca5a5;
+  --cat-red-bg: #2e1c1c;
+  --cat-yellow: #fde68a;
+  --cat-yellow-bg: #2e2a15;
+
+  --shadow-accent: 0 20px 50px rgb(212 240 74 / 0.14);
+  --shadow-accent-strong: 0 12px 30px rgb(212 240 74 / 0.22);
+  --shadow-dialog: 0 40px 100px rgb(0 0 0 / 0.6);
+  --glow-accent: rgb(212 240 74 / 0.14);
+
+  /* Biến shadcn trỏ về token của Flow */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--bg);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted-foreground: var(--muted);
+  --accent-foreground: var(--bg);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--accent);
+  --radius: 0.875rem;
+
+  color-scheme: dark;
 }
 
 @theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-dim: var(--dim);
+  --color-soft: var(--soft);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-switch-off: var(--switch-off);
+  --color-border-strong: var(--border-strong);
+  --color-overlay: var(--overlay);
+  --color-danger: var(--danger);
+
+  --color-cat-sky: var(--cat-sky);
+  --color-cat-orange: var(--cat-orange);
+  --color-cat-green: var(--cat-green);
+  --color-cat-violet: var(--cat-violet);
+  --color-cat-pink: var(--cat-pink);
+  --color-cat-red: var(--cat-red);
+  --color-cat-yellow: var(--cat-yellow);
+  --color-cat-sky-bg: var(--cat-sky-bg);
+  --color-cat-orange-bg: var(--cat-orange-bg);
+  --color-cat-green-bg: var(--cat-green-bg);
+  --color-cat-violet-bg: var(--cat-violet-bg);
+  --color-cat-pink-bg: var(--cat-pink-bg);
+  --color-cat-red-bg: var(--cat-red-bg);
+  --color-cat-yellow-bg: var(--cat-yellow-bg);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-heading: var(--font-display);
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: var(--radius);
+  --radius-xl: 1rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 1.75rem;
+
+  --shadow-accent: var(--shadow-accent);
+  --shadow-accent-strong: var(--shadow-accent-strong);
+  --shadow-dialog: var(--shadow-dialog);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply bg-bg font-sans;
+  }
+  body {
+    @apply bg-bg text-text antialiased;
+  }
+  input,
+  textarea {
+    caret-color: var(--accent);
+  }
+  a {
+    @apply text-accent hover:text-accent-hover;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Nhãn mục: 11px, chữ hoa, giãn 1.2px, màu muted */
+  .label-caps {
+    @apply text-[11px] font-semibold tracking-[1.2px] text-muted-foreground uppercase;
+  }
+  /* Số tiền lớn */
+  .num-xl {
+    @apply font-display leading-none font-bold tracking-[-2px];
+  }
+  .card {
+    @apply rounded-3xl border border-border bg-surface;
+  }
+  .card-highlight {
+    @apply rounded-3xl bg-accent text-bg shadow-accent;
+  }
 }
