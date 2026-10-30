@@ -16,10 +16,10 @@ begin
     (p_user, 'Giải trí', 'clapperboard', 'pink', 'expense', 4),
     (p_user, 'Sức khoẻ', 'heart-pulse', 'red', 'expense', 5),
     (p_user, 'Giáo dục', 'graduation-cap', 'yellow', 'expense', 6),
-    (p_user, 'Khác', 'circle-ellipsis', 'violet', 'expense', 7),
+    (p_user, 'Khác', 'circle-ellipsis', 'slate', 'expense', 7),
     (p_user, 'Lương', 'banknote', 'green', 'income', 0),
     (p_user, 'Thưởng', 'gift', 'yellow', 'income', 1),
-    (p_user, 'Khác', 'circle-ellipsis', 'sky', 'income', 2)
+    (p_user, 'Khác', 'circle-ellipsis', 'slate', 'income', 2)
   on conflict (user_id, type, name) do nothing;
 
   if not exists (select 1 from public.funds where user_id = p_user and is_default) then

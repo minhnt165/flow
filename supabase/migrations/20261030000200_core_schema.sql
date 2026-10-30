@@ -14,7 +14,7 @@ language sql
 immutable
 set search_path = ''
 as $$
-  select c in ('sky', 'orange', 'green', 'violet', 'pink', 'red', 'yellow');
+  select c in ('sky', 'orange', 'green', 'violet', 'pink', 'red', 'yellow', 'slate');
 $$;
 
 -- Giờ "hiện tại" có thể ghim bằng GUC app.now (chỉ dùng trong test); production luôn là now().
@@ -47,9 +47,6 @@ create table public.funds (
   created_at timestamptz not null default now(),
   constraint funds_budget_only_monthly check (kind = 'monthly_budget' or monthly_budget is null),
   constraint funds_goal_needs_target check (kind <> 'goal' or target_amount is not null),
-  constraint funds_goal_needs_deadline check (
-    kind <> 'goal' or target_date is not null or countdown_id is not null
-  ),
   constraint funds_goal_only_fields check (
     kind = 'goal'
     or (target_amount is null and target_date is null and countdown_id is null and auto_contribution is null)

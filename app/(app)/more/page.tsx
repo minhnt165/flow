@@ -15,7 +15,7 @@ export default function MorePage() {
   return (
     <Page>
       <PageHeader title={t.nav.more} />
-      <div className="card relative flex flex-col px-5 py-2">
+      <div className="relative flex flex-col card px-5 py-2">
         {items.map((item, i) => {
           const Icon = item.icon;
           return (

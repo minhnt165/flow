@@ -24,7 +24,7 @@ export function OnboardingForm() {
       <input type="hidden" name="budget" value={budget} />
 
       <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
-        <legend className="label-caps mb-3">{t.onboarding.salaryDay}</legend>
+        <legend className="mb-3 label-caps">{t.onboarding.salaryDay}</legend>
         <div className="grid grid-cols-7 gap-1.5">
           {DAYS.map((d) => (
             <button

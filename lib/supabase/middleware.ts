@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { DEMO_MODE } from "@/lib/demo/mode";
 import { hasSupabaseEnv, SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 
 const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/auth/"];
@@ -11,7 +12,7 @@ function matches(pathname: string, paths: string[]) {
 
 // Làm mới cookie phiên Supabase và chặn route cần đăng nhập.
 export async function updateSession(request: NextRequest) {
-  if (!hasSupabaseEnv) return NextResponse.next({ request });
+  if (!hasSupabaseEnv || DEMO_MODE) return NextResponse.next({ request });
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

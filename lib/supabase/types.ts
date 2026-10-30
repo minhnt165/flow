@@ -1,7 +1,8 @@
 // Kiểu dữ liệu khớp schema trong supabase/migrations. Tiền là numeric(14,0) → number nguyên trong JS.
 // Khi đã link project thật có thể sinh lại bằng `pnpm db:types` để đối chiếu.
 
-export type PaletteColor = "sky" | "orange" | "green" | "violet" | "pink" | "red" | "yellow";
+export type PaletteColor =
+  "sky" | "orange" | "green" | "violet" | "pink" | "red" | "yellow" | "slate";
 export type FundKind = "monthly_budget" | "goal" | "free";
 export type CategoryType = "expense" | "income";
 export type TransactionType = "expense" | "income" | "transfer";
@@ -103,8 +104,8 @@ export type GoalProgress = {
   salary_day: number;
   days_left: number | null;
   periods_left: number;
-  per_period: number;
-  expected_pct: number;
+  per_period: number | null;
+  expected_pct: number | null;
   behind_schedule: boolean;
   auto_contribution: number | null;
   auto_from_fund_id: string | null;

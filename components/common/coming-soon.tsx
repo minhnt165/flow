@@ -8,7 +8,7 @@ export function ComingSoon({ title }: { title: string }) {
   return (
     <Page>
       <PageHeader title={title} />
-      <div className="card relative flex flex-col items-start gap-4 p-8">
+      <div className="relative flex flex-col items-start gap-4 card p-8">
         <span className="flex size-11 items-center justify-center rounded-[14px] bg-cat-violet-bg text-cat-violet">
           <Hourglass className="size-5" aria-hidden />
         </span>

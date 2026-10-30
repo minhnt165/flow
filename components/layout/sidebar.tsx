@@ -24,11 +24,6 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
     >
       <Icon className={cn("size-5", active && "text-accent")} aria-hidden />
       <span className="grow">{item.label}</span>
-      {item.soon && (
-        <span className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-dim">
-          {t.nav.soon}
-        </span>
-      )}
     </Link>
   );
 }

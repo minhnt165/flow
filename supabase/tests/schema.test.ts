@@ -222,6 +222,23 @@ describe("tiến độ quỹ mục tiêu (v_fund_goal_progress)", () => {
     expect(g.behind_schedule).toBe(false);
   });
 
+  it("quỹ mục tiêu không có hạn: không tính góp mỗi kỳ, không bao giờ chậm", async () => {
+    const { q } = await ids(uid);
+    const [{ id }] = await q<{ id: string }>(
+      "insert into funds (name, kind, target_amount) values ('Khẩn cấp', 'goal', 10000000) returning id",
+    );
+    const [g] = await q(
+      "select per_period, expected_pct, behind_schedule, periods_left from v_fund_goal_progress where fund_id = $1",
+      [id],
+    );
+    expect(g).toEqual({
+      per_period: null,
+      expected_pct: null,
+      behind_schedule: false,
+      periods_left: 0,
+    });
+  });
+
   it("hạn lấy theo countdown gắn kèm (lặp hằng năm thì sang năm sau)", async () => {
     const { q } = await ids(uid);
     const [{ id: cd }] = await q<{ id: string }>(

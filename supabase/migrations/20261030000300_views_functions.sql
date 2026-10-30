@@ -258,8 +258,10 @@ calc as (
     greatest(base.target_amount - base.contributed, 0)::numeric(14, 0) as remaining,
     round(base.contributed * 100.0 / base.target_amount, 1) as pct,
     public.fn_pay_periods(base.today, base.deadline, base.salary_day) as periods_left,
+    -- Không có hạn thì không có "đáng lẽ" và không bao giờ bị coi là chậm.
     case
-      when base.deadline is null or base.deadline <= base.start_date then 100
+      when base.deadline is null then null
+      when base.deadline <= base.start_date then 100
       else least(100, greatest(0, round((base.today - base.start_date) * 100.0 / (base.deadline - base.start_date), 1)))
     end as expected_pct,
     (
@@ -278,11 +280,12 @@ select
   -- Cần góp mỗi kỳ, làm tròn lên bội số 50.000 ₫ cho dễ chuyển.
   case
     when calc.remaining = 0 then 0
+    when calc.deadline is null then null
     when calc.periods_left > 0 then (ceil(calc.remaining / calc.periods_left / 50000.0) * 50000)::numeric(14, 0)
     else calc.remaining
   end as per_period,
   calc.expected_pct,
-  (calc.contributed < calc.target_amount and calc.pct < calc.expected_pct) as behind_schedule,
+  coalesce(calc.contributed < calc.target_amount and calc.pct < calc.expected_pct, false) as behind_schedule,
   calc.auto_contribution,
   calc.auto_from_fund_id,
   calc.countdown_id,

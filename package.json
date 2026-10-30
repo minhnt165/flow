@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:demo": "cross-env NEXT_PUBLIC_DEMO_MODE=1 next dev --turbopack --port 3001",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint .",
@@ -45,6 +46,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.28",
     "eslint-config-prettier": "^10.1.8",
