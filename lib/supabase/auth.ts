@@ -1,10 +1,16 @@
-import type { AuthError, SupabaseClient } from "@supabase/supabase-js";
+import {
+  isAuthRetryableFetchError,
+  type AuthError,
+  type EmailOtpType,
+  type SupabaseClient,
+} from "@supabase/supabase-js";
 import { t } from "@/messages/vi";
 
 export type AuthFormState = { error?: string; message?: string };
 
 export function authErrorMessage(error: AuthError | null | undefined): string {
   if (!error) return t.auth.errors.generic;
+  if (isAuthRetryableFetchError(error)) return t.auth.errors.network;
   switch (error.code) {
     case "invalid_credentials":
       return t.auth.errors.invalidCredentials;
@@ -21,6 +27,39 @@ export function authErrorMessage(error: AuthError | null | undefined): string {
     default:
       return t.auth.errors.generic;
   }
+}
+
+// Mã lỗi Supabase trả về /auth/callback (qua query error_code, hoặc từ lúc đổi code lấy phiên).
+export function callbackErrorMessage(reason: string | null | undefined): string {
+  const code = reason && /^[a-z0-9_]{1,64}$/.test(reason) ? reason : null;
+  let message: string;
+  switch (code) {
+    case "otp_expired":
+    case "flow_state_expired":
+      message = t.auth.errors.callbackExpired;
+      break;
+    case "pkce_code_verifier_not_found":
+    case "flow_state_not_found":
+    case "bad_code_verifier":
+      message = t.auth.errors.callbackOtherBrowser;
+      break;
+    case "access_denied":
+      message = t.auth.errors.callbackDenied;
+      break;
+    case "network":
+      message = t.auth.errors.network;
+      break;
+    case "server_error":
+    case "unexpected_failure":
+    case "provider_disabled":
+    case "bad_oauth_callback":
+    case "bad_oauth_state":
+      message = t.auth.errors.callbackProvider;
+      break;
+    default:
+      message = t.auth.errors.callback;
+  }
+  return code ? `${message} ${t.auth.errors.errorCode(code)}` : message;
 }
 
 export function safeNextPath(next: string | null | undefined): string {
@@ -58,6 +97,11 @@ export const updatePassword = (sb: SupabaseClient, password: string) =>
 
 export const exchangeCode = (sb: SupabaseClient, code: string) =>
   sb.auth.exchangeCodeForSession(code);
+
+// Link email dạng token_hash (mẫu email trong docs/SETUP.md): không cần code verifier,
+// nên mở trên trình duyệt hay thiết bị khác vẫn được.
+export const verifyEmailToken = (sb: SupabaseClient, tokenHash: string, type: EmailOtpType) =>
+  sb.auth.verifyOtp({ token_hash: tokenHash, type });
 
 export const signOut = (sb: SupabaseClient) => sb.auth.signOut();
 

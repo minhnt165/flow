@@ -67,6 +67,13 @@ export const vi = {
       emailNotConfirmed: "Email chưa được xác nhận. Kiểm tra hộp thư của bạn.",
       rateLimited: "Gửi quá nhiều yêu cầu. Đợi một lát rồi thử lại.",
       callback: "Link đăng nhập đã hết hạn hoặc không hợp lệ. Thử lại nhé.",
+      callbackExpired: "Link đã hết hạn hoặc đã được dùng. Gửi lại link mới nhé.",
+      callbackOtherBrowser:
+        "Không xác nhận được phiên đăng nhập. Mở link trên cùng trình duyệt bạn đã dùng để đăng nhập hoặc đăng ký.",
+      callbackDenied: "Bạn đã huỷ đăng nhập.",
+      network: "Máy chủ không kết nối được Supabase. Kiểm tra mạng rồi thử lại.",
+      callbackProvider: "Không đăng nhập được bằng Google. Thử lại sau ít phút.",
+      errorCode: (code: string) => `Mã lỗi: ${code}`,
       userExists: "Email này đã có tài khoản.",
     },
   },

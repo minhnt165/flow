@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AuthFooter, AuthHeading } from "@/components/auth/auth-heading";
 import { GoogleButton, OrDivider } from "@/components/auth/google-button";
 import { LoginForm } from "@/components/auth/login-form";
+import { callbackErrorMessage } from "@/lib/supabase/auth";
 import { t } from "@/messages/vi";
 
 export const metadata: Metadata = { title: t.auth.loginTitle };
@@ -10,12 +11,12 @@ export const metadata: Metadata = { title: t.auth.loginTitle };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; reason?: string }>;
 }) {
-  const { next, error } = await searchParams;
+  const { next, error, reason } = await searchParams;
   const initialError = error
     ? error === "callback"
-      ? t.auth.errors.callback
+      ? callbackErrorMessage(reason)
       : t.auth.errors.generic
     : undefined;
 
