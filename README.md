@@ -1,6 +1,6 @@
 # Flow
 
-Web app quản lý cá nhân cho một người dùng Việt Nam: chi tiêu, quỹ, mục tiêu quỹ, hoá đơn định kỳ, countdown ngày quan trọng và nhắc qua Telegram. Chạy tốt trên desktop và điện thoại, cài được như PWA.
+Web app quản lý cá nhân cho một người dùng Việt Nam: chi tiêu, quỹ, mục tiêu quỹ, hoá đơn định kỳ, countdown ngày quan trọng, việc cần làm, thói quen, ghi chú và nhắc qua Telegram. Chạy tốt trên desktop và điện thoại, cài được như PWA.
 
 **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS 4 · shadcn/ui (Base UI) · TanStack Query · Zustand · Supabase (Postgres, Auth, RLS, Edge Functions, pg_cron) · Vitest · Playwright.
 
@@ -25,22 +25,22 @@ Chế độ demo (`NEXT_PUBLIC_DEMO_MODE=1`) thay client Supabase bằng kho d�
 
 ## Lệnh
 
-| Lệnh                           | Việc                                                                     |
-| ------------------------------ | ------------------------------------------------------------------------ |
-| `pnpm dev` / `pnpm dev:demo`   | Dev server (Turbopack) với Supabase thật / dữ liệu demo                  |
-| `pnpm build`                   | Build production                                                         |
-| `pnpm lint` · `pnpm typecheck` | ESLint · TypeScript                                                      |
-| `pnpm test`                    | Vitest: tiền tệ, ngày giờ, parser tin nhắn, kế hoạch quỹ, CSV, test SQL  |
-| `pnpm test:e2e`                | Playwright 4 luồng: thêm chi tiêu, chuyển quỹ, tạo quỹ mục tiêu, hoá đơn |
-| `pnpm db:push`                 | Đẩy `supabase/migrations` lên project đã link                            |
-| `pnpm db:types`                | Sinh type từ schema thật vào `lib/supabase/database.types.ts`            |
-| `pnpm functions:bundle`        | Gộp mỗi Edge Function thành một file để dán vào Supabase Dashboard       |
-| `node scripts/screenshots.mjs` | Chụp các trang chính (desktop + mobile) từ `dev:demo` để so với thiết kế |
-| `node scripts/gen-icons.mjs`   | Sinh lại icon PWA / apple-touch từ logo                                  |
+| Lệnh                           | Việc                                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `pnpm dev` / `pnpm dev:demo`   | Dev server (Turbopack) với Supabase thật / dữ liệu demo                                |
+| `pnpm build`                   | Build production                                                                       |
+| `pnpm lint` · `pnpm typecheck` | ESLint · TypeScript                                                                    |
+| `pnpm test`                    | Vitest: tiền tệ, ngày giờ, parser tin nhắn, kế hoạch quỹ, CSV, test SQL                |
+| `pnpm test:e2e`                | Playwright: thêm chi tiêu, chuyển quỹ, quỹ mục tiêu, hoá đơn, việc, thói quen, ghi chú |
+| `pnpm db:push`                 | Đẩy `supabase/migrations` lên project đã link                                          |
+| `pnpm db:types`                | Sinh type từ schema thật vào `lib/supabase/database.types.ts`                          |
+| `pnpm functions:bundle`        | Gộp mỗi Edge Function thành một file để dán vào Supabase Dashboard                     |
+| `node scripts/screenshots.mjs` | Chụp các trang chính (desktop + mobile) từ `dev:demo` để so với thiết kế               |
+| `node scripts/gen-icons.mjs`   | Sinh lại icon PWA / apple-touch từ logo                                                |
 
 ### Test SQL
 
-`supabase/tests/schema.test.ts` chạy **toàn bộ migration thật** trên Postgres nhúng (PGlite, không cần Docker). Bộ test dùng một lớp giả lập tối thiểu của Supabase: role `anon` / `authenticated` / `service_role`, `auth.users`, `auth.uid()`. Test kiểm tra số dư quỹ, ngân sách tháng theo giờ VN, tiến độ mục tiêu, countdown lặp theo chu kỳ tháng, hoá đơn định kỳ (hạn tới, đánh dấu đã trả), RLS, job tự động góp, liên kết Telegram và thông báo. Migration nào cần pg_cron / Vault thì đánh dấu `-- pglite:skip`.
+`supabase/tests/*.test.ts` chạy **toàn bộ migration thật** trên Postgres nhúng (PGlite, không cần Docker). Bộ test dùng một lớp giả lập tối thiểu của Supabase: role `anon` / `authenticated` / `service_role`, `auth.users`, `auth.uid()`. Test kiểm tra số dư quỹ, ngân sách tháng theo giờ VN, tiến độ mục tiêu, countdown lặp theo chu kỳ tháng, hoá đơn định kỳ (hạn tới, đánh dấu đã trả), việc cần làm (hạn theo giờ người dùng), thói quen (chuỗi ngày, số ngày trong tuần), ghi chú (updated_at), RLS, job tự động góp, liên kết Telegram và thông báo. Migration nào cần pg_cron / Vault thì đánh dấu `-- pglite:skip`.
 
 ### E2E
 
@@ -120,7 +120,7 @@ Import repo, nhập 4 biến `NEXT_PUBLIC_*`, deploy. Sau đó thêm `https://<d
 
 ```
 app/                  Route Next.js: (auth) đăng nhập, (app) các module sau đăng nhập, onboarding
-components/           ui/ (shadcn đã tuỳ biến), layout/, common/, expenses/, bills/, countdowns/, settings/, home/
+components/           ui/ (shadcn đã tuỳ biến), layout/, common/, expenses/, bills/, countdowns/, todos/, habits/, notes/, settings/, home/
 hooks/                Hook TanStack Query, mỗi domain một file
 lib/supabase/         Mọi truy vấn Supabase, mỗi bảng một file
 lib/demo/             Dữ liệu mẫu + client giả cho chế độ demo
