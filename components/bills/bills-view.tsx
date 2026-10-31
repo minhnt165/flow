@@ -33,10 +33,18 @@ export function dueText(b: BillView) {
   return `${t.bills.due(date)} · ${t.bills.dueIn(b.days_left)}`;
 }
 
+/** Hoá đơn đến hạn trong tháng hiện tại (đã trả, hoặc hạn tới rơi vào tháng này). */
+function dueThisMonth(b: BillView) {
+  return b.paid_this_month || b.next_run_on.slice(0, 7) === b.today.slice(0, 7);
+}
+
 function SummaryCard({ bills }: { bills: BillView[] }) {
   const active = bills.filter((b) => b.active);
-  const total = active.reduce((s, b) => s + b.amount, 0);
-  const paid = active.filter((b) => b.paid_this_month);
+  // Quy đổi về mỗi tháng: hoá đơn 3 tháng/lần tính 1/3.
+  const total = active.reduce((s, b) => s + Math.round(b.amount / b.interval_months), 0);
+  const mixed = active.some((b) => b.interval_months > 1);
+  const due = active.filter(dueThisMonth);
+  const paid = due.filter((b) => b.paid_this_month);
   const paidAmount = paid.reduce((s, b) => s + (b.last_paid_amount ?? b.amount), 0);
   const dueSoon = active
     .filter((b) => b.days_left <= 7 && !b.paid_this_month)
@@ -45,7 +53,7 @@ function SummaryCard({ bills }: { bills: BillView[] }) {
     {
       label: t.bills.paidThisMonth,
       value: formatNumber(paidAmount),
-      sub: t.bills.paidProgress(paid.length, active.length),
+      sub: t.bills.paidProgress(paid.length, due.length),
     },
     { label: t.bills.dueSoon, value: formatNumber(dueSoon) },
   ];
@@ -54,9 +62,12 @@ function SummaryCard({ bills }: { bills: BillView[] }) {
       <span className="text-[11px] font-semibold tracking-[1.2px] uppercase opacity-75">
         {t.bills.monthlyTotal}
       </span>
-      <div className="flex items-baseline gap-1.5">
-        <span className="num-xl text-[42px]">{formatNumber(total)}</span>
-        <span className="font-display text-xl font-bold">₫</span>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-baseline gap-1.5">
+          <span className="num-xl text-[42px]">{formatNumber(total)}</span>
+          <span className="font-display text-xl font-bold">₫</span>
+        </div>
+        {mixed && <span className="text-[12px] opacity-75">{t.bills.monthlyTotalHint}</span>}
       </div>
       <div className="grid grid-cols-2 gap-3 border-t border-bg/15 pt-3.5">
         {stats.map((s) => (
@@ -83,9 +94,10 @@ function BillRow({ bill: b }: { bill: BillView }) {
   const overdue = b.active && b.days_left < 0;
   // Đã trả trong tháng và hạn tới còn xa thì chỉ hiện nhãn; gần hạn vẫn cho đánh dấu lần nữa.
   const showPay = b.active && (!b.paid_this_month || b.days_left <= 7);
+  const interval = b.interval_months > 1 ? t.bills.intervalLabel(b.interval_months) : null;
   const sub = b.active
-    ? [dueText(b), fund?.name].filter(Boolean).join(" · ")
-    : [t.bills.everyMonth(b.day_of_month), fund?.name].filter(Boolean).join(" · ");
+    ? [dueText(b), interval, fund?.name].filter(Boolean).join(" · ")
+    : [interval ?? t.bills.everyMonth(b.day_of_month), fund?.name].filter(Boolean).join(" · ");
 
   const resume = async () => {
     try {
@@ -110,7 +122,7 @@ function BillRow({ bill: b }: { bill: BillView }) {
           </span>
           <span
             className={cn(
-              "truncate text-xs text-muted-foreground",
+              "line-clamp-2 text-xs leading-snug text-muted-foreground",
               overdue && "font-medium text-danger",
             )}
           >

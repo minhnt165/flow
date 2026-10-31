@@ -620,6 +620,32 @@ describe("hoá đơn định kỳ (v_bills, fn_pay_bill)", () => {
     );
   });
 
+  it("hoá đơn 3 tháng/lần: hạn tới nhảy đúng một quý, trễ nhiều quý chỉ tới quý gần nhất", async () => {
+    const { q, defaultFund } = await ids(uid);
+    const [{ id }] = await q<{ id: string }>(
+      `insert into recurring_rules (kind, name, amount, fund_id, day_of_month, interval_months, next_run_on)
+       values ('bill', 'Tiền nhà quý', 13500000, $1, 5, 3, '2026-11-05') returning id`,
+      [defaultFund],
+    );
+    const [{ r }] = await q<{ r: Record<string, unknown> }>("select fn_pay_bill($1) as r", [id]);
+    expect(r.next_run_on).toBe("2027-02-05");
+    const [v] = await q("select interval_months from v_bills where id = $1", [id]);
+    expect(v.interval_months).toBe(3);
+
+    await q("update recurring_rules set next_run_on = '2026-02-05' where id = $1", [id]);
+    const [{ r: late }] = await q<{ r: Record<string, unknown> }>("select fn_pay_bill($1) as r", [
+      id,
+    ]);
+    expect(late.next_run_on).toBe("2026-11-05");
+
+    await expect(
+      q(
+        "insert into recurring_rules (kind, name, amount, fund_id, day_of_month, interval_months, next_run_on) values ('bill', 'Sai', 1, $1, 1, 5, '2026-11-01')",
+        [defaultFund],
+      ),
+    ).rejects.toThrow(/interval_months/);
+  });
+
   it("RLS: người khác không trả hộ được; bot đánh dấu đã trả dùng cùng quy tắc", async () => {
     const other = await createUser(db, "bills-other@example.com");
     const qo = asUser(db, other);

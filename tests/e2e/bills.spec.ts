@@ -11,7 +11,7 @@ test("thêm hoá đơn định kỳ, đánh dấu đã trả → có khoản chi
   await dialog.getByLabel("Tên hoá đơn").fill(name);
   await dialog.getByLabel("Số tiền mỗi kỳ").fill("300000");
   await expect(dialog.getByLabel("Số tiền mỗi kỳ")).toHaveValue("300.000");
-  await dialog.getByLabel("Ngày đến hạn hằng tháng").selectOption("15");
+  await dialog.getByLabel("Ngày đến hạn").selectOption("15");
   await expect(dialog.getByText(/Hạn tới:/)).toBeVisible();
   await dialog.getByRole("button", { name: "Thêm hoá đơn" }).click();
   await expect(dialog).toBeHidden();

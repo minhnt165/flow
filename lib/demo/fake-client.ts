@@ -22,7 +22,7 @@ import type {
   Transaction,
 } from "@/lib/supabase/types";
 import {
-  nthSalaryDateAfter,
+  nextBillDueAfter,
   payPeriods,
   perPeriodNeeded,
 } from "@/supabase/functions/_shared/goal.ts";
@@ -195,6 +195,7 @@ class Store {
           last_paid_at: paid?.occurred_at ?? null,
           last_paid_amount: paid?.amount ?? null,
           paid_this_month: Boolean(paid && paid.occurred_at >= monthFrom),
+          interval_months: r.interval_months ?? 1,
         };
       });
   }
@@ -225,8 +226,12 @@ class Store {
       created_at: new Date().toISOString(),
     };
     this.db.transactions.push(tx);
-    const after = rule.next_run_on > paidOn ? rule.next_run_on : paidOn;
-    rule.next_run_on = nthSalaryDateAfter(after, rule.day_of_month, 1);
+    rule.next_run_on = nextBillDueAfter(
+      rule.next_run_on,
+      paidOn,
+      rule.day_of_month,
+      rule.interval_months ?? 1,
+    );
     return { transaction_id: tx.id, amount: tx.amount, next_run_on: rule.next_run_on };
   }
 
@@ -470,6 +475,7 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
         row.repeat_yearly = row.repeat_months === 12;
       }
       if (this.name === "funds") row.opening_balance ??= 0;
+      if (this.name === "recurring_rules") row.interval_months ??= 1;
       this.store.mutable(this.name).push(row);
       rows = [row];
     } else if (this.op === "update") {

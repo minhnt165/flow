@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   dueDateOnOrAfter,
+  nextBillDueAfter,
   forecastScenarios,
   payPeriods,
   perPeriodNeeded,
@@ -14,6 +15,13 @@ describe("hạn hoá đơn", () => {
     expect(dueDateOnOrAfter("2026-10-30", 30)).toBe("2026-10-30");
     expect(dueDateOnOrAfter("2026-10-30", 31)).toBe("2026-10-31");
     expect(dueDateOnOrAfter("2027-02-10", 31)).toBe("2027-02-28");
+  });
+  it("hạn tới sau khi trả nhảy theo chu kỳ, trễ nhiều kỳ chỉ tới kỳ gần nhất sau ngày trả", () => {
+    expect(nextBillDueAfter("2026-11-05", "2026-10-30", 5, 1)).toBe("2026-12-05");
+    expect(nextBillDueAfter("2026-11-05", "2026-10-30", 5, 3)).toBe("2027-02-05");
+    expect(nextBillDueAfter("2026-02-05", "2026-10-30", 5, 3)).toBe("2026-11-05");
+    expect(nextBillDueAfter("2026-01-31", "2026-02-10", 31, 3)).toBe("2026-04-30");
+    expect(nextBillDueAfter("2026-08-31", "2026-10-30", 31, 1)).toBe("2026-10-31");
   });
 });
 

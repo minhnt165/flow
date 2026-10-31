@@ -156,6 +156,8 @@ export type RecurringRule = {
   to_fund_id: string | null;
   category_id: string | null;
   day_of_month: number;
+  /** Chu kỳ hoá đơn theo tháng (1, 2, 3, 6, 12); quy tắc chuyển quỹ luôn 1. */
+  interval_months: number;
   run_after_salary: boolean;
   next_run_on: string;
   active: boolean;
@@ -168,6 +170,8 @@ export type BillInput = {
   fund_id: string;
   category_id: string | null;
   day_of_month: number;
+  /** Chu kỳ theo tháng: 1, 2, 3, 6, 12. */
+  interval_months: number;
   /** Hạn tới; client tính bằng dueDateOnOrAfter khi tạo hoặc đổi ngày. */
   next_run_on: string;
   active: boolean;

@@ -64,6 +64,28 @@ export function dueDateOnOrAfter(from: string, dayOfMonth: number): string {
   return thisMonth >= from ? thisMonth : nthSalaryDateAfter(from, dayOfMonth, 1);
 }
 
+/**
+ * Hạn tới của hoá đơn sau khi trả (cùng quy tắc fn_bill_next_due): lần đầu tiên trong chuỗi
+ * hạn + k × chu kỳ nằm SAU max(hạn hiện tại, ngày trả), giữ ngày trong tháng.
+ */
+export function nextBillDueAfter(
+  due: string,
+  paidOn: string,
+  dayOfMonth: number,
+  intervalMonths = 1,
+): string {
+  const base = due > paidOn ? due : paidOn;
+  const [dy, dm] = due.split("-").map(Number);
+  const [by, bm] = base.split("-").map(Number);
+  const k0 = Math.floor(((by - dy) * 12 + (bm - dm)) / intervalMonths);
+  const at = (k: number) => {
+    const total = dm - 1 + k * intervalMonths;
+    return salaryDateOf(dy + Math.floor(total / 12), (total % 12) + 1, dayOfMonth);
+  };
+  const candidate = at(k0);
+  return candidate > base ? candidate : at(k0 + 1);
+}
+
 export function roundUp(n: number, step = PER_PERIOD_STEP): number {
   return Math.ceil(n / step) * step;
 }

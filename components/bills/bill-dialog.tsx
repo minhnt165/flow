@@ -21,6 +21,7 @@ import { useUi } from "@/stores/ui";
 import { dueDateOnOrAfter } from "@/supabase/functions/_shared/goal.ts";
 
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+const INTERVALS = [1, 2, 3, 6, 12];
 const inputCls =
   "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none placeholder:text-dim focus-visible:border-accent/60 md:text-[15px] [color-scheme:dark]";
 
@@ -37,6 +38,7 @@ function BillForm({ editing }: { editing: BillView | null }) {
     name: editing?.name ?? "",
     amount: editing?.amount ?? 0,
     day: editing?.day_of_month ?? Number(today.slice(8, 10)),
+    interval: editing?.interval_months ?? 1,
     categoryId: editing?.category_id ?? null,
     fundId: editing?.fund_id ?? "",
     active: editing?.active ?? true,
@@ -68,6 +70,7 @@ function BillForm({ editing }: { editing: BillView | null }) {
           name: s.name.trim(),
           amount: s.amount,
           day_of_month: s.day,
+          interval_months: s.interval,
           category_id: categoryId,
           fund_id: fundId,
           next_run_on: nextDue,
@@ -157,6 +160,26 @@ function BillForm({ editing }: { editing: BillView | null }) {
             ))}
           </select>
           <span className="text-[11px] text-dim">{d.nextDue(formatLongDate(nextDue))}</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2.5">
+        <span className="label-caps" id="bill-interval">
+          {d.interval}
+        </span>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="bill-interval">
+          {INTERVALS.map((m) => (
+            <Chip
+              key={m}
+              role="radio"
+              aria-checked={s.interval === m}
+              active={s.interval === m}
+              onClick={() => set({ interval: m })}
+              className="min-h-[38px] text-[13px]"
+            >
+              {d.intervalOptions[m]}
+            </Chip>
+          ))}
         </div>
       </div>
 
