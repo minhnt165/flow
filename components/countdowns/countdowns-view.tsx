@@ -25,7 +25,10 @@ import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
 import { useUi } from "@/stores/ui";
 
-type Filter = "upcoming" | "yearly" | "past";
+type Filter = "all" | "upcoming" | "repeating" | "past";
+
+const repeatLabelOf = (c: CountdownView) =>
+  c.repeat_months ? t.countdowns.repeatLabel(c.repeat_months) : null;
 
 function LinkBudget({ c }: { c: CountdownView }) {
   const funds = useFunds();
@@ -101,11 +104,11 @@ function Featured({ c }: { c: CountdownView }) {
           </span>
           <span className="text-[13px] text-muted-foreground md:text-[15px]">
             {formatLongDate(c.next_occurrence)}
-            <span className="hidden md:inline">{c.repeat_yearly && t.countdowns.repeatSuffix}</span>
+            <span className="hidden md:inline">{c.repeat_months && ` · ${repeatLabelOf(c)}`}</span>
           </span>
-          {c.repeat_yearly && (
+          {c.repeat_months && (
             <span className="self-start rounded-[10px] bg-surface-2 px-2.5 py-[5px] text-[11px] font-semibold text-soft md:hidden">
-              {t.countdowns.yearly}
+              {repeatLabelOf(c)}
             </span>
           )}
           <div className="mt-2 hidden flex-wrap gap-2.5 md:flex">
@@ -169,18 +172,24 @@ export function CountdownsView() {
 
   const all = q.data ?? [];
   const upcoming = all.filter((c) => !c.is_past).sort((a, b) => a.days_left - b.days_left);
+  const past = all
+    .filter((c) => c.is_past)
+    .sort((a, b) => b.event_date.localeCompare(a.event_date));
   const list =
-    filter === "upcoming"
-      ? upcoming
-      : filter === "yearly"
-        ? all.filter((c) => c.repeat_yearly).sort((a, b) => a.days_left - b.days_left)
-        : all.filter((c) => c.is_past).sort((a, b) => b.event_date.localeCompare(a.event_date));
+    filter === "all"
+      ? [...upcoming, ...past]
+      : filter === "upcoming"
+        ? upcoming
+        : filter === "repeating"
+          ? all.filter((c) => c.repeat_months).sort((a, b) => a.days_left - b.days_left)
+          : past;
   const featured = filter === "upcoming" ? list[0] : undefined;
   const rest = featured ? list.slice(1) : list;
 
   const filters: { value: Filter; label: string }[] = [
     { value: "upcoming", label: t.countdowns.filters.upcoming },
-    { value: "yearly", label: t.countdowns.filters.yearly },
+    { value: "all", label: t.countdowns.filters.all },
+    { value: "repeating", label: t.countdowns.filters.repeating },
     { value: "past", label: t.countdowns.filters.past },
   ];
 
@@ -283,8 +292,8 @@ export function CountdownsView() {
                     <span className="flex min-w-0 grow flex-col gap-[3px]">
                       <span className="truncate text-[15px] font-semibold">{c.title}</span>
                       <span className="text-xs text-muted-foreground">
-                        {c.repeat_yearly
-                          ? `${formatDayMonth(c.next_occurrence)} · ${t.countdowns.yearly}`
+                        {c.repeat_months
+                          ? `${formatDayMonth(c.next_occurrence)} · ${repeatLabelOf(c)}`
                           : formatDate(c.next_occurrence)}
                       </span>
                     </span>
@@ -319,7 +328,7 @@ export function CountdownsView() {
                       title={c.title}
                       date={c.next_occurrence}
                       daysLeft={c.days_left}
-                      repeat={c.repeat_yearly}
+                      repeatLabel={repeatLabelOf(c)}
                       icon={c.icon}
                       color={c.color}
                       isPast={c.is_past}

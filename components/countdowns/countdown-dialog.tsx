@@ -9,29 +9,18 @@ import { Chip } from "@/components/common/segmented";
 import { CountdownCard } from "@/components/countdowns/countdown-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import { useDeleteCountdown, useSaveCountdown } from "@/hooks/use-countdowns";
 import { PALETTE, tone } from "@/lib/colors";
-import { APP_TZ, daysBetween, localDate } from "@/lib/dates";
+import { APP_TZ, daysBetween, localDate, nextOccurrenceOn } from "@/lib/dates";
 import type { CountdownView, PaletteColor } from "@/lib/supabase/types";
 import { t } from "@/messages/vi";
 import { useUi } from "@/stores/ui";
 
 const REMIND = [0, 1, 3, 7];
+/** 0 = không lặp; còn lại là số tháng mỗi chu kỳ. */
+const REPEAT = [0, 1, 3, 6, 12];
 const inputCls =
   "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none placeholder:text-dim focus-visible:border-accent/60 md:text-[15px] [color-scheme:dark]";
-
-/** Ngày tới của sự kiện (cùng quy tắc fn_next_occurrence) để xem trước. */
-function nextOccurrence(date: string, repeat: boolean, today: string) {
-  if (!date || !repeat || date >= today) return date;
-  const [, m, d] = date.split("-").map(Number);
-  const at = (y: number) => {
-    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
-    return `${y}-${String(m).padStart(2, "0")}-${String(Math.min(d, last)).padStart(2, "0")}`;
-  };
-  const y = Number(today.slice(0, 4));
-  return at(y) >= today ? at(y) : at(y + 1);
-}
 
 function CountdownForm({ editing }: { editing: CountdownView | null }) {
   const close = useUi((s) => s.closeCountdown);
@@ -41,7 +30,7 @@ function CountdownForm({ editing }: { editing: CountdownView | null }) {
   const [s, setS] = useState({
     title: editing?.title ?? "",
     date: editing?.event_date ?? "",
-    repeat: editing?.repeat_yearly ?? false,
+    repeat: editing?.repeat_months ?? 0,
     color: (editing?.color ?? "pink") as PaletteColor,
     icon: editing?.icon ?? "calendar",
     remind: editing?.remind_days ?? [0, 1, 3],
@@ -50,7 +39,8 @@ function CountdownForm({ editing }: { editing: CountdownView | null }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const set = (p: Partial<typeof s>) => setS((prev) => ({ ...prev, ...p }));
 
-  const next = nextOccurrence(s.date, s.repeat, today);
+  const next = s.date ? nextOccurrenceOn(s.date, s.repeat || null, today) : "";
+  const repeatLabel = s.repeat ? t.countdowns.repeatLabel(s.repeat) : null;
   const daysLeft = next ? daysBetween(today, next) : 0;
 
   const submit = async () => {
@@ -63,7 +53,7 @@ function CountdownForm({ editing }: { editing: CountdownView | null }) {
         input: {
           title: s.title.trim(),
           event_date: s.date,
-          repeat_yearly: s.repeat,
+          repeat_months: s.repeat || null,
           color: s.color,
           icon: s.icon,
           remind_days: [...s.remind].sort((a, b) => a - b),
@@ -152,19 +142,25 @@ function CountdownForm({ editing }: { editing: CountdownView | null }) {
               className={inputCls}
             />
           </div>
-          <label className="flex min-h-14 cursor-pointer items-center justify-between gap-3 rounded-[14px] border border-border bg-bg px-3.5">
-            <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">{t.countdowns.dialog.repeat}</span>
-              <span className="text-xs text-muted-foreground">
-                {t.countdowns.dialog.repeatHint}
-              </span>
+          <div className="flex flex-col gap-2.5">
+            <span className="label-caps" id="cd-repeat">
+              {t.countdowns.dialog.repeat}
             </span>
-            <Switch
-              checked={s.repeat}
-              onCheckedChange={(v) => set({ repeat: v })}
-              aria-label={t.countdowns.dialog.repeat}
-            />
-          </label>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="cd-repeat">
+              {REPEAT.map((m) => (
+                <Chip
+                  key={m}
+                  role="radio"
+                  aria-checked={s.repeat === m}
+                  active={s.repeat === m}
+                  onClick={() => set({ repeat: m })}
+                  className="min-h-[38px] text-[13px]"
+                >
+                  {t.countdowns.dialog.repeatOptions[m]}
+                </Chip>
+              ))}
+            </div>
+          </div>
           <div className="flex flex-col gap-2.5">
             <span className="label-caps" id="cd-color">
               {t.countdowns.dialog.color}
@@ -219,7 +215,7 @@ function CountdownForm({ editing }: { editing: CountdownView | null }) {
             title={s.title}
             date={next}
             daysLeft={daysLeft}
-            repeat={s.repeat}
+            repeatLabel={repeatLabel}
             icon={s.icon}
             color={s.color}
             isPast={Boolean(next) && daysLeft < 0}

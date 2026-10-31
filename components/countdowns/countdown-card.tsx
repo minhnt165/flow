@@ -10,7 +10,7 @@ export function CountdownCard({
   title,
   date,
   daysLeft,
-  repeat,
+  repeatLabel,
   icon,
   color,
   isPast,
@@ -20,7 +20,8 @@ export function CountdownCard({
   title: string;
   date: string;
   daysLeft: number;
-  repeat: boolean;
+  /** Nhãn chu kỳ lặp ("Hằng năm", "3 tháng/lần"); null = không lặp. */
+  repeatLabel?: string | null;
   icon: string;
   color: PaletteColor;
   isPast?: boolean;
@@ -31,9 +32,9 @@ export function CountdownCard({
     <div className={cn("flex flex-col gap-[18px]", className)}>
       <div className="flex items-center justify-between">
         <IconTile icon={icon} color={color} size={44} />
-        {repeat && (
+        {repeatLabel && (
           <span className="rounded-[10px] bg-surface-2 px-2.5 py-[5px] text-[11px] font-semibold text-soft">
-            {t.countdowns.yearly}
+            {repeatLabel}
           </span>
         )}
       </div>

@@ -1,7 +1,17 @@
 // Client Supabase giả cho chế độ demo: dữ liệu trong bộ nhớ, view tính lại bằng JS theo cùng quy tắc SQL.
 // Chỉ hỗ trợ đúng những phương thức lib/supabase/* đang dùng.
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { addDays, addMonths, APP_TZ, daysBetween, localDate, monthStart, toIso } from "@/lib/dates";
+import {
+  addDays,
+  addMonths,
+  APP_TZ,
+  daysBetween,
+  localDate,
+  monthStart,
+  nextOccurrenceOn,
+  prevOccurrenceOn,
+  toIso,
+} from "@/lib/dates";
 import type {
   BillView,
   CountdownView,
@@ -19,12 +29,6 @@ import {
 import { buildFixtures, DEMO_USER, type Fixtures } from "./fixtures";
 
 type Row = Record<string, unknown>;
-
-function anniversary(event: string, year: number) {
-  const [, m, d] = event.split("-").map(Number);
-  const last = new Date(Date.UTC(year, m, 0)).getUTCDate();
-  return `${year}-${String(m).padStart(2, "0")}-${String(Math.min(d, last)).padStart(2, "0")}`;
-}
 
 class Store {
   db: Fixtures = buildFixtures();
@@ -46,21 +50,10 @@ class Store {
   countdowns(): CountdownView[] {
     const today = this.today();
     return this.db.countdowns.map((c) => {
-      const y = Number(today.slice(0, 4));
-      let next = c.event_date;
-      if (c.repeat_yearly && c.event_date < today) {
-        next =
-          anniversary(c.event_date, y) >= today
-            ? anniversary(c.event_date, y)
-            : anniversary(c.event_date, y + 1);
-      }
+      const next = nextOccurrenceOn(c.event_date, c.repeat_months, today);
       const created = localDate(new Date(c.created_at), APP_TZ);
-      const start =
-        c.repeat_yearly && next > c.event_date
-          ? [created, anniversary(c.event_date, Number(next.slice(0, 4)) - 1)].sort().at(-1)!
-          : created < next
-            ? created
-            : next;
+      const prev = prevOccurrenceOn(c.event_date, c.repeat_months, next);
+      const start = prev ? (created > prev ? created : prev) : created < next ? created : next;
       const total = daysBetween(start, next);
       return {
         ...c,
@@ -74,7 +67,8 @@ class Store {
                 100,
                 Math.max(0, Math.round((daysBetween(start, today) * 1000) / total) / 10),
               ),
-        is_past: !c.repeat_yearly && c.event_date < today,
+        is_past: !c.repeat_months && c.event_date < today,
+        repeat_yearly: c.repeat_months === 12,
       };
     });
   }
@@ -470,7 +464,11 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
         ...this.payload,
       };
       if (this.name === "transactions") row.recurring_rule_id ??= null;
-      if (this.name === "countdowns") row.fund_id ??= null;
+      if (this.name === "countdowns") {
+        row.fund_id ??= null;
+        row.repeat_months ??= null;
+        row.repeat_yearly = row.repeat_months === 12;
+      }
       if (this.name === "funds") row.opening_balance ??= 0;
       this.store.mutable(this.name).push(row);
       rows = [row];

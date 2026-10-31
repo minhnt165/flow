@@ -193,6 +193,9 @@ export type Countdown = {
   user_id: string;
   title: string;
   event_date: string;
+  /** Chu kỳ lặp theo tháng (1, 2, 3, 6, 12); null = không lặp. */
+  repeat_months: number | null;
+  /** Dẫn xuất từ repeat_months (= 12), chỉ đọc. */
   repeat_yearly: boolean;
   icon: string;
   color: PaletteColor;
@@ -203,7 +206,7 @@ export type Countdown = {
 
 export type CountdownInput = Pick<
   Countdown,
-  "title" | "event_date" | "repeat_yearly" | "icon" | "color" | "remind_days" | "fund_id"
+  "title" | "event_date" | "repeat_months" | "icon" | "color" | "remind_days" | "fund_id"
 >;
 
 /** Dòng của view v_countdowns. */

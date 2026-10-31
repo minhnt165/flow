@@ -85,6 +85,34 @@ export function addMonths(day: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Dời n tháng, giữ ngày trong tháng; tháng ngắn hơn lấy ngày cuối (31/01 + 1 = 28/02). */
+export function shiftMonths(day: string, n: number): string {
+  const [y, m, d] = day.split("-").map(Number);
+  const first = new Date(Date.UTC(y, m - 1 + n, 1));
+  const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
+  return `${first.getUTCFullYear()}-${pad(first.getUTCMonth() + 1)}-${pad(Math.min(d, last))}`;
+}
+
+function monthsBetween(a: string, b: string): number {
+  const [ay, am] = a.split("-").map(Number);
+  const [by, bm] = b.split("-").map(Number);
+  return (by - ay) * 12 + (bm - am);
+}
+
+/** Lần tới ≥ today của sự kiện lặp mỗi repeatMonths tháng (cùng quy tắc fn_next_occurrence_on). */
+export function nextOccurrenceOn(event: string, repeatMonths: number | null, today: string) {
+  if (!repeatMonths || event >= today) return event;
+  const k = Math.floor(monthsBetween(event, today) / repeatMonths);
+  const candidate = shiftMonths(event, k * repeatMonths);
+  return candidate >= today ? candidate : shiftMonths(event, (k + 1) * repeatMonths);
+}
+
+/** Lần lặp ngay trước `next`; null nếu là lần đầu hoặc không lặp. */
+export function prevOccurrenceOn(event: string, repeatMonths: number | null, next: string) {
+  if (!repeatMonths || next <= event) return null;
+  return shiftMonths(event, monthsBetween(event, next) - repeatMonths);
+}
+
 /** "2026-10-17" → "2026-10-01" */
 export function monthStart(day: string): string {
   return `${day.slice(0, 7)}-01`;
