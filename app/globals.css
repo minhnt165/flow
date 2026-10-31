@@ -167,6 +167,14 @@
   color: var(--muted);
 }
 
+/* Thanh tab cuộn ngang: không hiện thanh cuộn (Windows luôn vẽ scrollbar khi tràn) */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Số tiền lớn */
 @utility num-xl {
   font-family: var(--font-display);

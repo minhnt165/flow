@@ -24,7 +24,7 @@ export function SettingsView({ email }: { email: string }) {
         <PageHeader title={t.settings.title} />
         <nav
           aria-label={t.settings.tabsLabel}
-          className="flex gap-1.5 overflow-x-auto border-b border-surface-2"
+          className="scrollbar-none flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-surface-2"
         >
           {TABS.map((k) => (
             <Link

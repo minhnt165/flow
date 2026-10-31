@@ -69,7 +69,7 @@ export function ExpensesHeader() {
       />
       <nav
         aria-label={t.expenses.tabsLabel}
-        className="flex gap-1.5 overflow-x-auto border-b border-surface-2"
+        className="scrollbar-none flex gap-1.5 overflow-x-auto overflow-y-hidden border-b border-surface-2"
       >
         {TABS.map((tab) => {
           const active =
