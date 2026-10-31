@@ -65,6 +65,17 @@ export function dueDateOnOrAfter(from: string, dayOfMonth: number): string {
 }
 
 /**
+ * `n` hạn liên tiếp (mỗi tháng một lần) kể từ hạn đầu tiên ≥ `from`: các tháng có thể bắt đầu
+ * chu kỳ của hoá đơn trả mỗi `n` tháng. Giữ ngày trong tháng, tháng ngắn lấy ngày cuối.
+ */
+export function dueDatesFrom(from: string, dayOfMonth: number, n: number): string[] {
+  const [y, m] = dueDateOnOrAfter(from, dayOfMonth).split("-").map(Number);
+  return Array.from({ length: n }, (_, i) =>
+    salaryDateOf(y + Math.floor((m - 1 + i) / 12), ((m - 1 + i) % 12) + 1, dayOfMonth),
+  );
+}
+
+/**
  * Hạn tới của hoá đơn sau khi trả (cùng quy tắc fn_bill_next_due): lần đầu tiên trong chuỗi
  * hạn + k × chu kỳ nằm SAU max(hạn hiện tại, ngày trả), giữ ngày trong tháng.
  */

@@ -36,3 +36,25 @@ test("thêm hoá đơn định kỳ, đánh dấu đã trả → có khoản chi
     timeout: 5_000,
   });
 });
+
+test("hoá đơn chu kỳ 3 tháng: chọn được tháng của kỳ tới, hạn tới đổi theo", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/bills");
+  await page.getByRole("button", { name: "Thêm hoá đơn" }).first().click();
+  const dialog = page.getByRole("dialog");
+
+  // Hằng tháng thì không hỏi kỳ tới.
+  await expect(dialog.getByLabel("Kỳ tới vào tháng")).toHaveCount(0);
+
+  await dialog.getByRole("radio", { name: "3 tháng" }).click();
+  const cycle = dialog.getByLabel("Kỳ tới vào tháng");
+  await expect(cycle).toBeVisible();
+  const options = cycle.locator("option");
+  await expect(options).toHaveCount(3);
+
+  // Chọn kỳ thứ hai → "Hạn tới" nhảy sang đúng tháng đó.
+  const second = await options.nth(1).getAttribute("value");
+  await cycle.selectOption(second!);
+  const [y, m] = second!.split("-");
+  await expect(dialog.getByText(new RegExp(`Hạn tới: .*/${m}/${y}`))).toBeVisible();
+});

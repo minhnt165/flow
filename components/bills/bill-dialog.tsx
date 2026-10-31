@@ -13,12 +13,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { useDeleteBill, useSaveBill } from "@/hooks/use-bills";
 import { useLookups } from "@/hooks/use-lookups";
-import { APP_TZ, formatLongDate, localDate } from "@/lib/dates";
+import { APP_TZ, formatLongDate, formatMonth, localDate } from "@/lib/dates";
 import type { BillView } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
 import { useUi } from "@/stores/ui";
-import { dueDateOnOrAfter } from "@/supabase/functions/_shared/goal.ts";
+import { dueDateOnOrAfter, dueDatesFrom } from "@/supabase/functions/_shared/goal.ts";
 
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const INTERVALS = [1, 2, 3, 6, 12];
@@ -42,6 +42,8 @@ function BillForm({ editing }: { editing: BillView | null }) {
     categoryId: editing?.category_id ?? null,
     fundId: editing?.fund_id ?? "",
     active: editing?.active ?? true,
+    /** Kỳ tới người dùng chọn khi chu kỳ > 1 tháng; null = kỳ gần nhất. */
+    nextDue: editing?.next_run_on ?? null,
   });
   const [error, setError] = useState<string>();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -53,10 +55,25 @@ function BillForm({ editing }: { editing: BillView | null }) {
   const fundId = s.fundId || defaultFund?.id || funds[0]?.id || "";
 
   // Giữ hạn hiện tại khi sửa mà không đổi ngày; đổi ngày thì tính lại từ hôm nay.
+  const keepCurrent = editing && s.day === editing.day_of_month ? editing.next_run_on : null;
+  // Chu kỳ > 1 tháng: kỳ tới có thể rơi vào bất kỳ tháng nào trong `interval` tháng tới,
+  // nên hỏi người dùng. Hạn hiện tại (khi sửa) luôn có trong danh sách để không mất.
+  const cycleOptions =
+    s.interval > 1
+      ? [
+          ...new Set([
+            ...(keepCurrent ? [keepCurrent] : []),
+            ...dueDatesFrom(today, s.day, s.interval),
+          ]),
+        ].sort()
+      : [];
+  const pickedCycle =
+    cycleOptions.find((d) => d === s.nextDue) ??
+    cycleOptions.find((d) => d.slice(0, 7) === s.nextDue?.slice(0, 7));
   const nextDue =
-    editing && s.day === editing.day_of_month
-      ? editing.next_run_on
-      : dueDateOnOrAfter(today, s.day);
+    s.interval > 1
+      ? (pickedCycle ?? keepCurrent ?? cycleOptions[0])
+      : (keepCurrent ?? dueDateOnOrAfter(today, s.day));
 
   const submit = async () => {
     if (!s.name.trim()) return setError(d.errors.name);
@@ -182,6 +199,27 @@ function BillForm({ editing }: { editing: BillView | null }) {
           ))}
         </div>
       </div>
+
+      {s.interval > 1 && (
+        <div className="flex flex-col gap-2">
+          <label htmlFor="bill-cycle" className="label-caps">
+            {d.nextCycle}
+          </label>
+          <select
+            id="bill-cycle"
+            value={nextDue}
+            onChange={(e) => set({ nextDue: e.target.value })}
+            className={cn(inputCls, "cursor-pointer md:text-sm")}
+          >
+            {cycleOptions.map((day) => (
+              <option key={day} value={day}>
+                {formatMonth(day)}
+              </option>
+            ))}
+          </select>
+          <span className="text-[11px] text-dim">{d.nextCycleHint(s.interval)}</span>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2.5">
         <span className="label-caps" id="bill-cat">

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   dueDateOnOrAfter,
+  dueDatesFrom,
   nextBillDueAfter,
   forecastScenarios,
   payPeriods,
@@ -15,6 +16,18 @@ describe("hạn hoá đơn", () => {
     expect(dueDateOnOrAfter("2026-10-30", 30)).toBe("2026-10-30");
     expect(dueDateOnOrAfter("2026-10-30", 31)).toBe("2026-10-31");
     expect(dueDateOnOrAfter("2027-02-10", 31)).toBe("2027-02-28");
+  });
+  it("các tháng có thể bắt đầu chu kỳ: n hạn liên tiếp từ hạn đầu tiên, qua năm và tháng ngắn", () => {
+    expect(dueDatesFrom("2026-10-30", 5, 3)).toEqual(["2026-11-05", "2026-12-05", "2027-01-05"]);
+    expect(dueDatesFrom("2026-10-30", 31, 6)).toEqual([
+      "2026-10-31",
+      "2026-11-30",
+      "2026-12-31",
+      "2027-01-31",
+      "2027-02-28",
+      "2027-03-31",
+    ]);
+    expect(dueDatesFrom("2026-10-30", 30, 1)).toEqual(["2026-10-30"]);
   });
   it("hạn tới sau khi trả nhảy theo chu kỳ, trễ nhiều kỳ chỉ tới kỳ gần nhất sau ngày trả", () => {
     expect(nextBillDueAfter("2026-11-05", "2026-10-30", 5, 1)).toBe("2026-12-05");
