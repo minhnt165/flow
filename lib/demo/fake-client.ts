@@ -18,6 +18,7 @@ import type {
   FundMonth,
   FundWithBalance,
   GoalProgress,
+  HabitView,
   RecurringRule,
   TodoView,
   Transaction,
@@ -247,6 +248,45 @@ class Store {
     }));
   }
 
+  /** v_habits: streak kết thúc ở hôm nay hoặc hôm qua, week_count từ thứ Hai, last7 kết thúc hôm nay. */
+  habits(): HabitView[] {
+    const today = this.today();
+    // Thứ Hai của tuần hiện tại (getUTCDay: 0 = Chủ nhật).
+    const dow = new Date(`${today}T00:00:00Z`).getUTCDay();
+    const monday = addDays(today, -((dow + 6) % 7));
+    return this.db.habits.map((h) => {
+      const days = new Set(this.db.habitLogs.filter((l) => l.habit_id === h.id).map((l) => l.day));
+      const doneToday = days.has(today);
+      let streak = 0;
+      let cursor = doneToday ? today : addDays(today, -1);
+      while (days.has(cursor)) {
+        streak += 1;
+        cursor = addDays(cursor, -1);
+      }
+      return {
+        ...h,
+        today,
+        done_today: doneToday,
+        streak,
+        week_count: [...days].filter((d) => d >= monday && d <= today).length,
+        total_count: days.size,
+        last7: Array.from({ length: 7 }, (_, i) => days.has(addDays(today, i - 6))),
+      };
+    });
+  }
+
+  toggleHabit(id: string, day: string | null) {
+    if (!this.db.habits.some((h) => h.id === id)) throw new Error("habit_not_found");
+    const d = day ?? this.today();
+    const i = this.db.habitLogs.findIndex((l) => l.habit_id === id && l.day === d);
+    if (i >= 0) {
+      this.db.habitLogs.splice(i, 1);
+      return false;
+    }
+    this.db.habitLogs.push({ habit_id: id, day: d });
+    return true;
+  }
+
   // Cùng quy tắc với fn_remove_fund: quỹ đã có lịch sử thì lưu trữ, chưa dùng thì xoá hẳn.
   removeFund(id: string) {
     const used =
@@ -290,6 +330,10 @@ class Store {
         return this.todos();
       case "todos":
         return this.db.todos;
+      case "v_habits":
+        return this.habits();
+      case "habits":
+        return this.db.habits;
       default:
         return [];
     }
@@ -303,6 +347,7 @@ class Store {
       countdowns: this.db.countdowns,
       recurring_rules: this.db.rules,
       todos: this.db.todos,
+      habits: this.db.habits,
       profiles: [this.db.profile],
     };
     return map[name] ?? [];
@@ -371,6 +416,8 @@ class Store {
           (args.p_amount as number | null) ?? null,
           (args.p_paid_at as string | null) ?? null,
         );
+      case "fn_toggle_habit":
+        return this.toggleHabit(String(args.p_habit_id), (args.p_day as string | null) ?? null);
       case "fn_remove_fund":
         return this.removeFund(String(args.p_fund_id));
       case "fn_set_default_fund":
@@ -493,6 +540,10 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
       }
       if (this.name === "funds") row.opening_balance ??= 0;
       if (this.name === "recurring_rules") row.interval_months ??= 1;
+      if (this.name === "habits") {
+        row.sort_order ??= 0;
+        row.archived_at ??= null;
+      }
       if (this.name === "todos") {
         row.note ??= null;
         row.due_on ??= null;
@@ -507,6 +558,11 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
       const list = this.store.mutable(this.name);
       rows = list.filter((r) => this.filters.every((f) => f(r)));
       rows.forEach((r) => list.splice(list.indexOf(r), 1));
+      // Xoá thói quen thì xoá luôn log (on delete cascade).
+      if (this.name === "habits") {
+        const ids = new Set(rows.map((r) => r.id));
+        this.store.db.habitLogs = this.store.db.habitLogs.filter((l) => !ids.has(l.habit_id));
+      }
     } else {
       rows = this.store.table(this.name).filter((r) => this.filters.every((f) => f(r)));
       if (this.orders.length) {

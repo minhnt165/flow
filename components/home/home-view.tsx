@@ -1,6 +1,13 @@
 "use client";
 
-import { CalendarHeart, ChevronRight, PiggyBank, Plus, SquareCheckBig } from "lucide-react";
+import {
+  Activity,
+  CalendarHeart,
+  ChevronRight,
+  PiggyBank,
+  Plus,
+  SquareCheckBig,
+} from "lucide-react";
 import Link from "next/link";
 import { IconTile } from "@/components/common/icon-tile";
 import { ProgressBar } from "@/components/common/progress-bar";
@@ -8,12 +15,14 @@ import { ProgressRing } from "@/components/common/progress-ring";
 import { CardSkeleton, EmptyState } from "@/components/common/states";
 import { BudgetHighlight } from "@/components/expenses/overview";
 import { TransactionList } from "@/components/expenses/transaction-list";
+import { HabitRow } from "@/components/habits/habit-row";
 import { PageHeader } from "@/components/layout/page";
 import { TodoRow } from "@/components/todos/todo-row";
 import { sortOpen } from "@/components/todos/todos-view";
 import { Button } from "@/components/ui/button";
 import { useCountdowns } from "@/hooks/use-countdowns";
 import { useGoals } from "@/hooks/use-funds";
+import { useHabits } from "@/hooks/use-habits";
 import { useProfile } from "@/hooks/use-profile";
 import { useTodos } from "@/hooks/use-todos";
 import { useTransactions } from "@/hooks/use-transactions";
@@ -174,6 +183,51 @@ function TodayTodos() {
   );
 }
 
+/** Thói quen đang theo dõi, tick hôm nay ngay tại trang chủ. */
+function HabitsCard() {
+  const q = useHabits();
+  const openHabit = useUi((s) => s.openHabit);
+  if (q.isLoading) return <CardSkeleton />;
+  const active = (q.data ?? []).filter((h) => !h.archived_at);
+  const done = active.filter((h) => h.done_today).length;
+  return (
+    <div className="flex flex-col gap-2 card px-6 pt-6 pb-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="m-0 flex min-w-0 items-baseline gap-2 text-[15px] font-semibold">
+          <span className="truncate">{t.home.habits}</span>
+          {active.length > 0 && (
+            <span className="shrink-0 text-[12px] font-medium text-muted-foreground">
+              {t.habits.todayCount(done, active.length)}
+            </span>
+          )}
+        </h2>
+        <Link href="/habits" className="shrink-0 text-[13px] font-medium no-underline">
+          {t.home.seeAll}
+        </Link>
+      </div>
+      {active.length === 0 ? (
+        <EmptyState
+          icon={Activity}
+          title={t.home.noHabits}
+          className="py-4"
+          action={
+            <Button variant="secondary" size="sm" onClick={() => openHabit(null)}>
+              <Plus className="size-4" aria-hidden />
+              {t.home.addHabit}
+            </Button>
+          }
+        />
+      ) : (
+        <div className="flex flex-col">
+          {active.slice(0, 5).map((h) => (
+            <HabitRow key={h.id} habit={h} compact />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecentCard() {
   const q = useTransactions({ limit: 5 });
   return (
@@ -214,6 +268,7 @@ export function HomeView() {
         <BudgetHighlight />
         <NextCountdown />
         <TodayTodos />
+        <HabitsCard />
         <GoalsCard />
       </div>
       <RecentCard />

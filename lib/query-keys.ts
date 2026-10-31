@@ -16,6 +16,8 @@ export const qk = {
   countdowns: ["countdowns"] as const,
   bills: ["bills"] as const,
   todos: ["todos"] as const,
+  habits: ["habits"] as const,
+  notes: ["notes"] as const,
 };
 
 /** Những truy vấn phụ thuộc vào giao dịch: làm mới sau mỗi lần thêm/sửa/xoá. */

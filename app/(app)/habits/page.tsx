@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/common/coming-soon";
+import { HabitsView } from "@/components/habits/habits-view";
+import { Page } from "@/components/layout/page";
 import { t } from "@/messages/vi";
 
-export const metadata: Metadata = { title: t.nav.habits };
+export const metadata: Metadata = { title: t.habits.title };
 
-export default function Page() {
-  return <ComingSoon title={t.nav.habits} />;
+export default function HabitsPage() {
+  return (
+    <Page>
+      <HabitsView />
+    </Page>
+  );
 }

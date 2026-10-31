@@ -19,7 +19,7 @@ export const MODULES: NavItem[] = [
   { href: "/expenses", label: t.nav.expenses, icon: CreditCard },
   { href: "/countdowns", label: t.nav.countdowns, icon: Timer },
   { href: "/todos", label: t.nav.todos, icon: SquareCheckBig },
-  { href: "/habits", label: t.nav.habits, icon: Activity, soon: true },
+  { href: "/habits", label: t.nav.habits, icon: Activity },
   { href: "/notes", label: t.nav.notes, icon: FileText, soon: true },
   { href: "/bills", label: t.nav.bills, icon: Zap },
 ];

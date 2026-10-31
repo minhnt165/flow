@@ -4,6 +4,7 @@ import type {
   Category,
   Countdown,
   Fund,
+  Habit,
   Profile,
   RecurringRule,
   Todo,
@@ -437,7 +438,33 @@ export function buildFixtures() {
     todo("Dọn tủ quần áo", null, { done_at: at(addDays(today, -1), "20:15") }),
   ];
 
-  return { profile, categories, funds, transactions, countdowns, rules, todos };
+  const habit = (name: string, icon: string, color: Habit["color"], target: number): Habit => ({
+    id: id("habit"),
+    user_id: uid,
+    name,
+    icon,
+    color,
+    target_per_week: target,
+    sort_order: 0,
+    archived_at: null,
+    created_at: at(addDays(today, -40), "08:00"),
+  });
+  const habits: Habit[] = [
+    habit("Uống 2 lít nước", "droplets", "sky", 7),
+    habit("Tập gym", "dumbbell", "orange", 4),
+    habit("Đọc sách 20 phút", "book-open", "violet", 5),
+    habit("Ngủ trước 23h", "bed", "green", 7),
+  ];
+  // Log theo ngày: (chỉ số thói quen, số ngày trước hôm nay)
+  const habitLogs: { habit_id: string; day: string }[] = [];
+  const log = (i: number, daysAgo: number[]) =>
+    daysAgo.forEach((n) => habitLogs.push({ habit_id: habits[i].id, day: addDays(today, -n) }));
+  log(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  log(1, [1, 3, 5, 8, 10]);
+  log(2, [0, 1, 2, 4, 6]);
+  log(3, [2, 5]);
+
+  return { profile, categories, funds, transactions, countdowns, rules, todos, habits, habitLogs };
 }
 
 export type Fixtures = ReturnType<typeof buildFixtures>;
