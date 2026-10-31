@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, CalendarClock, CircleCheck, TriangleAlert } from "lucide-react";
+import { CalendarClock, CircleCheck, Star, Trash2, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AmountInput } from "@/components/common/amount-input";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useCountdowns } from "@/hooks/use-countdowns";
-import { useArchiveFund, useFunds, useSaveFund } from "@/hooks/use-funds";
+import { useFunds, useRemoveFund, useSaveFund, useSetDefaultFund } from "@/hooks/use-funds";
 import { useSalaryContext } from "@/hooks/use-salary";
 import { tone } from "@/lib/colors";
 import { APP_TZ, formatDate, localDate } from "@/lib/dates";
@@ -74,13 +74,14 @@ function FundForm() {
   const preset = useUi((s) => s.fund.preset);
   const closeFund = useUi((s) => s.closeFund);
   const save = useSaveFund();
-  const archive = useArchiveFund();
+  const remove = useRemoveFund();
+  const makeDefault = useSetDefaultFund();
   const funds = useFunds();
   const countdowns = useCountdowns();
   const ctx = useSalaryContext(editing?.id);
   const [s, setS] = useState<FormState>(() => initial(editing, preset));
   const [error, setError] = useState<string>();
-  const [confirmArchive, setConfirmArchive] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const set = (p: Partial<FormState>) => setS((prev) => ({ ...prev, ...p }));
 
   const today = localDate(new Date(), APP_TZ);
@@ -136,12 +137,23 @@ function FundForm() {
     }
   };
 
-  const onArchive = async () => {
+  const onRemove = async () => {
     if (!editing) return;
-    if (!confirmArchive) return setConfirmArchive(true);
+    if (!confirmRemove) return setConfirmRemove(true);
     try {
-      await archive.mutateAsync(editing.id);
-      toast.success(t.fundDialog.archived);
+      const result = await remove.mutateAsync(editing.id);
+      toast.success(result === "deleted" ? t.fundDialog.deleted : t.fundDialog.archived);
+      closeFund();
+    } catch {
+      setError(t.fundDialog.errors.save);
+    }
+  };
+
+  const onMakeDefault = async () => {
+    if (!editing) return;
+    try {
+      await makeDefault.mutateAsync(editing.id);
+      toast.success(t.fundDialog.madeDefault);
       closeFund();
     } catch {
       setError(t.fundDialog.errors.save);
@@ -457,16 +469,37 @@ function FundForm() {
 
       <div className="flex flex-wrap justify-end gap-2.5 pt-1 max-md:sticky max-md:bottom-0 max-md:-mx-[22px] max-md:-mb-[22px] max-md:border-t max-md:border-surface-2 max-md:bg-surface max-md:px-[22px] max-md:py-3 max-md:pb-[max(12px,env(safe-area-inset-bottom))]">
         {editing && !isDefault && (
-          <Button
-            type="button"
-            variant="danger"
-            size="md"
-            className="mr-auto min-h-12"
-            onClick={onArchive}
-          >
-            <Archive aria-hidden />
-            {confirmArchive ? t.fundDialog.archiveConfirm : t.fundDialog.archive}
-          </Button>
+          <div className="mr-auto flex flex-wrap gap-2.5">
+            <Button
+              type="button"
+              variant="danger"
+              size="md"
+              className="min-h-12"
+              disabled={remove.isPending}
+              onClick={onRemove}
+            >
+              <Trash2 aria-hidden />
+              {confirmRemove ? t.fundDialog.removeConfirm : t.fundDialog.remove}
+            </Button>
+            {editing.kind !== "goal" && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="md"
+                className="min-h-12"
+                disabled={makeDefault.isPending}
+                onClick={onMakeDefault}
+              >
+                <Star aria-hidden />
+                {t.fundDialog.makeDefault}
+              </Button>
+            )}
+          </div>
+        )}
+        {editing && isDefault && (
+          <span className="mr-auto max-w-sm self-center text-xs text-muted-foreground">
+            {t.fundDialog.defaultHint}
+          </span>
         )}
         <Button
           type="button"

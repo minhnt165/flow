@@ -41,11 +41,15 @@ export async function updateFund(
   return data as Fund;
 }
 
-export async function archiveFund(sb: SupabaseClient, id: string) {
-  const { error } = await sb
-    .from("funds")
-    .update({ archived_at: new Date().toISOString() })
-    .eq("id", id);
+/** Quỹ chưa dùng thì xoá hẳn; đã có giao dịch / hoá đơn / là nguồn tự góp thì lưu trữ. */
+export async function removeFund(sb: SupabaseClient, id: string): Promise<"deleted" | "archived"> {
+  const { data, error } = await sb.rpc("fn_remove_fund", { p_fund_id: id });
+  if (error) throw error;
+  return data as "deleted" | "archived";
+}
+
+export async function setDefaultFund(sb: SupabaseClient, id: string) {
+  const { error } = await sb.rpc("fn_set_default_fund", { p_fund_id: id });
   if (error) throw error;
 }
 

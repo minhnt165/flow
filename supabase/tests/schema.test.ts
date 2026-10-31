@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 describe("người dùng mới", () => {
-  it("tạo profile, seed 8 danh mục chi + 3 thu và quỹ Sinh hoạt mặc định", async () => {
+  it("tạo profile, seed 8 danh mục chi + 3 thu và 3 quỹ (Sinh hoạt mặc định)", async () => {
     const uid = await createUser(db, "minh@example.com", { full_name: "Minh" });
     const q = asUser(db, uid);
     const [profile] = await q("select display_name, timezone, daily_summary_at from profiles");
@@ -37,8 +37,12 @@ describe("người dùng mới", () => {
       { type: "expense", n: 8 },
       { type: "income", n: 3 },
     ]);
-    const funds = await q("select name, kind, is_default from funds");
-    expect(funds).toEqual([{ name: "Sinh hoạt", kind: "monthly_budget", is_default: true }]);
+    const funds = await q("select name, kind, is_default from funds order by sort_order");
+    expect(funds).toEqual([
+      { name: "Sinh hoạt", kind: "monthly_budget", is_default: true },
+      { name: "Tiết kiệm", kind: "free", is_default: false },
+      { name: "Quỹ khẩn cấp", kind: "free", is_default: false },
+    ]);
   });
 });
 
@@ -70,7 +74,8 @@ describe("giao dịch và số dư quỹ", () => {
       [defaultFund, tet],
     );
     const rows = await q<{ name: string; balance: string }>(
-      "select name, balance from v_fund_balances order by name",
+      "select name, balance from v_fund_balances where id in ($1, $2) order by name",
+      [defaultFund, tet],
     );
     expect(rows.map((r) => [r.name, num(r.balance)])).toEqual([
       ["Quỹ Tết", 1000000],
@@ -660,6 +665,85 @@ describe("hoá đơn định kỳ (v_bills, fn_pay_bill)", () => {
       ["Internet", 3],
       ["Tiền điện", 1],
     ]);
+  });
+});
+
+describe("đổi quỹ mặc định và xoá quỹ", () => {
+  let uid: string;
+  const fundId = async (name: string) =>
+    (await asUser(db, uid)<{ id: string }>("select id from funds where name = $1", [name]))[0].id;
+
+  beforeAll(async () => {
+    uid = await createUser(db, "remove@example.com");
+  });
+
+  it("quỹ chưa có giao dịch: xoá hẳn", async () => {
+    const q = asUser(db, uid);
+    const id = await fundId("Quỹ khẩn cấp");
+    expect(await q("select fn_remove_fund($1) as r", [id])).toEqual([{ r: "deleted" }]);
+    expect(await q("select id from funds where id = $1", [id])).toEqual([]);
+  });
+
+  it("quỹ đã có giao dịch, hoá đơn hoặc là nguồn tự góp: chỉ lưu trữ", async () => {
+    const { q, cat } = await ids(uid);
+    const [{ id: used }] = await q<{ id: string }>(
+      "insert into funds (name, kind) values ('Đã dùng', 'free') returning id",
+    );
+    await q(
+      "insert into transactions (type, amount, fund_id, category_id) values ('expense', 1000, $1, $2)",
+      [used, cat("Ăn uống")],
+    );
+    const [{ id: billed }] = await q<{ id: string }>(
+      "insert into funds (name, kind) values ('Có hoá đơn', 'free') returning id",
+    );
+    await q(
+      `insert into recurring_rules (kind, name, amount, fund_id, day_of_month, next_run_on)
+       values ('bill', 'Internet', 200000, $1, 5, '2026-11-05')`,
+      [billed],
+    );
+    const [{ id: source }] = await q<{ id: string }>(
+      "insert into funds (name, kind) values ('Nguồn góp', 'free') returning id",
+    );
+    await q(
+      `insert into funds (name, kind, target_amount, auto_contribution, auto_from_fund_id)
+       values ('Mục tiêu', 'goal', 5000000, 500000, $1)`,
+      [source],
+    );
+    for (const id of [used, billed, source]) {
+      expect(await q("select fn_remove_fund($1) as r", [id])).toEqual([{ r: "archived" }]);
+      const [f] = await q("select archived_at is not null as archived from funds where id = $1", [
+        id,
+      ]);
+      expect(f).toEqual({ archived: true });
+    }
+  });
+
+  it("quỹ mặc định không xoá được; đổi mặc định sang quỹ khác rồi mới xoá", async () => {
+    const q = asUser(db, uid);
+    const living = await fundId("Sinh hoạt");
+    const saving = await fundId("Tiết kiệm");
+    await expect(q("select fn_remove_fund($1)", [living])).rejects.toThrow(
+      /default_fund_protected/,
+    );
+    await q("select fn_set_default_fund($1)", [saving]);
+    expect(await q("select name from funds where is_default")).toEqual([{ name: "Tiết kiệm" }]);
+    expect(await q("select fn_remove_fund($1) as r", [living])).toEqual([{ r: "deleted" }]);
+  });
+
+  it("không đặt mặc định cho quỹ mục tiêu, quỹ đã lưu trữ hay quỹ của người khác", async () => {
+    const q = asUser(db, uid);
+    const goal = await fundId("Mục tiêu");
+    const archived = await fundId("Đã dùng");
+    await expect(q("select fn_set_default_fund($1)", [goal])).rejects.toThrow(
+      /fund_cannot_be_default/,
+    );
+    await expect(q("select fn_set_default_fund($1)", [archived])).rejects.toThrow(
+      /fund_cannot_be_default/,
+    );
+    const other = await createUser(db, "remove-other@example.com");
+    const qo = asUser(db, other);
+    await expect(qo("select fn_set_default_fund($1)", [goal])).rejects.toThrow(/fund_not_found/);
+    await expect(qo("select fn_remove_fund($1)", [goal])).rejects.toThrow(/fund_not_found/);
   });
 });
 

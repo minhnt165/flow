@@ -236,6 +236,21 @@ class Store {
     return { transaction_id: tx.id, amount: tx.amount, next_run_on: rule.next_run_on };
   }
 
+  // Cùng quy tắc với fn_remove_fund: quỹ đã có lịch sử thì lưu trữ, chưa dùng thì xoá hẳn.
+  removeFund(id: string) {
+    const used =
+      this.db.transactions.some((t) => t.fund_id === id || t.to_fund_id === id) ||
+      this.db.rules.some((r) => r.kind === "bill" && r.fund_id === id) ||
+      this.db.funds.some((f) => f.auto_from_fund_id === id);
+    const i = this.db.funds.findIndex((f) => f.id === id);
+    if (used) {
+      this.db.funds[i].archived_at = new Date().toISOString();
+      return "archived";
+    }
+    this.db.funds.splice(i, 1);
+    return "deleted";
+  }
+
   table(name: string): Row[] {
     switch (name) {
       case "v_fund_balances":
@@ -340,6 +355,11 @@ class Store {
           (args.p_amount as number | null) ?? null,
           (args.p_paid_at as string | null) ?? null,
         );
+      case "fn_remove_fund":
+        return this.removeFund(String(args.p_fund_id));
+      case "fn_set_default_fund":
+        this.db.funds.forEach((f) => (f.is_default = f.id === args.p_fund_id));
+        return null;
       case "create_telegram_link_code":
         return { code: "7X4K29", expires_at: new Date(Date.now() + 10 * 60_000).toISOString() };
       case "disconnect_telegram":

@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { qk } from "@/lib/query-keys";
 import { getBrowserClient } from "@/lib/supabase/client";
 import {
-  archiveFund,
   createFund,
   getFund,
   getFundMonthlyInflow,
@@ -12,6 +11,8 @@ import {
   listFundMonth,
   listFunds,
   listGoalProgress,
+  removeFund,
+  setDefaultFund,
   updateFund,
 } from "@/lib/supabase/funds";
 import type { FundInput } from "@/lib/supabase/types";
@@ -74,7 +75,15 @@ export function useUpdateFund() {
   });
 }
 
-export function useArchiveFund() {
+export function useRemoveFund() {
   const invalidate = useInvalidateFunds();
-  return useMutation({ mutationFn: (id: string) => archiveFund(sb(), id), onSettled: invalidate });
+  return useMutation({ mutationFn: (id: string) => removeFund(sb(), id), onSettled: invalidate });
+}
+
+export function useSetDefaultFund() {
+  const invalidate = useInvalidateFunds();
+  return useMutation({
+    mutationFn: (id: string) => setDefaultFund(sb(), id),
+    onSettled: invalidate,
+  });
 }
