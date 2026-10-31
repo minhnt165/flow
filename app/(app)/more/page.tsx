@@ -28,9 +28,6 @@ export default function MorePage() {
                 <Icon className="size-5 text-muted-foreground" aria-hidden />
               </span>
               <span className="grow text-[15px] font-medium">{item.label}</span>
-              {item.soon && (
-                <span className="text-[11px] font-semibold text-dim">{t.nav.soon}</span>
-              )}
               <ChevronRight className="size-4 text-dim" aria-hidden />
             </Link>
           );

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { t } from "@/messages/vi";
 
-export type NavItem = { href: string; label: string; icon: LucideIcon; soon?: boolean };
+export type NavItem = { href: string; label: string; icon: LucideIcon };
 
 export const MODULES: NavItem[] = [
   { href: "/", label: t.nav.home, icon: House },
@@ -20,7 +20,7 @@ export const MODULES: NavItem[] = [
   { href: "/countdowns", label: t.nav.countdowns, icon: Timer },
   { href: "/todos", label: t.nav.todos, icon: SquareCheckBig },
   { href: "/habits", label: t.nav.habits, icon: Activity },
-  { href: "/notes", label: t.nav.notes, icon: FileText, soon: true },
+  { href: "/notes", label: t.nav.notes, icon: FileText },
   { href: "/bills", label: t.nav.bills, icon: Zap },
 ];
 

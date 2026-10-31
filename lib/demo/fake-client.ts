@@ -334,6 +334,8 @@ class Store {
         return this.habits();
       case "habits":
         return this.db.habits;
+      case "notes":
+        return this.db.notes;
       default:
         return [];
     }
@@ -348,6 +350,7 @@ class Store {
       recurring_rules: this.db.rules,
       todos: this.db.todos,
       habits: this.db.habits,
+      notes: this.db.notes,
       profiles: [this.db.profile],
     };
     return map[name] ?? [];
@@ -544,6 +547,10 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
         row.sort_order ??= 0;
         row.archived_at ??= null;
       }
+      if (this.name === "notes") {
+        row.pinned ??= false;
+        row.updated_at = row.created_at;
+      }
       if (this.name === "todos") {
         row.note ??= null;
         row.due_on ??= null;
@@ -554,6 +561,7 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
     } else if (this.op === "update") {
       rows = this.store.mutable(this.name).filter((r) => this.filters.every((f) => f(r)));
       rows.forEach((r) => Object.assign(r, this.payload));
+      if (this.name === "notes") rows.forEach((r) => (r.updated_at = new Date().toISOString()));
     } else if (this.op === "delete") {
       const list = this.store.mutable(this.name);
       rows = list.filter((r) => this.filters.every((f) => f(r)));

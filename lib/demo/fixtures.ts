@@ -5,6 +5,7 @@ import type {
   Countdown,
   Fund,
   Habit,
+  Note,
   Profile,
   RecurringRule,
   Todo,
@@ -464,7 +465,49 @@ export function buildFixtures() {
   log(2, [0, 1, 2, 4, 6]);
   log(3, [2, 5]);
 
-  return { profile, categories, funds, transactions, countdowns, rules, todos, habits, habitLogs };
+  const note = (title: string, body: string, pinned: boolean, daysAgo: number): Note => ({
+    id: id("note"),
+    user_id: uid,
+    title,
+    body,
+    pinned,
+    updated_at: at(addDays(today, -daysAgo), "19:30"),
+    created_at: at(addDays(today, -daysAgo - 3), "08:00"),
+  });
+  const notes: Note[] = [
+    note("Wifi nhà", "Tên: Flow_5G\nMật khẩu: giu-nhip-2026", true, 12),
+    note(
+      "Danh sách mua cuối tuần",
+      "- Sữa tươi 2 hộp\n- Trứng gà 1 vỉ\n- Rau cải, cà chua\n- Bánh mì sandwich\n- Nước giặt",
+      false,
+      1,
+    ),
+    note(
+      "",
+      "Ý tưởng quà sinh nhật mẹ: khăn lụa, sách nấu ăn, một buổi đi chụp ảnh gia đình.",
+      false,
+      4,
+    ),
+    note(
+      "Số điện thoại hay dùng",
+      "Garage Minh Phát: 0909 123 456\nSửa điện nước: 0912 555 777",
+      false,
+      20,
+    ),
+  ];
+
+  return {
+    profile,
+    categories,
+    funds,
+    transactions,
+    countdowns,
+    rules,
+    todos,
+    habits,
+    habitLogs,
+    notes,
+  };
 }
 
 export type Fixtures = ReturnType<typeof buildFixtures>;

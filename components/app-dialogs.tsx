@@ -7,6 +7,7 @@ import { CountdownDialog } from "@/components/countdowns/countdown-dialog";
 import { FundDialog } from "@/components/expenses/fund-dialog";
 import { TransactionDialog } from "@/components/expenses/transaction-dialog";
 import { HabitDialog } from "@/components/habits/habit-dialog";
+import { NoteDialog } from "@/components/notes/note-dialog";
 import { TodoDialog } from "@/components/todos/todo-dialog";
 import { useUi } from "@/stores/ui";
 
@@ -30,7 +31,8 @@ export function AppDialogs() {
         s.bill.open ||
         s.payBill.open ||
         s.todo.open ||
-        s.habit.open
+        s.habit.open ||
+        s.note.open
       )
         return;
       e.preventDefault();
@@ -57,6 +59,7 @@ export function AppDialogs() {
       <PayBillDialog />
       <TodoDialog />
       <HabitDialog />
+      <NoteDialog />
     </>
   );
 }
