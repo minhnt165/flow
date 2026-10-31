@@ -78,6 +78,7 @@ export function ExpensesHeader() {
             <Link
               key={tab.href}
               href={`${tab.href}${qs}`}
+              prefetch
               aria-current={active ? "page" : undefined}
               className={cn(
                 "-mb-px flex min-h-11 shrink-0 items-center border-b-2 px-3.5 text-sm no-underline",

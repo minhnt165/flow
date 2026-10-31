@@ -30,9 +30,10 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims xác minh JWT tại chỗ (không gọi Auth server) khi project bật khóa ký bất đối xứng;
+  // chưa bật thì tự rơi về getUser. Middleware chỉ cần biết có phiên hay không.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
   const { pathname, search } = request.nextUrl;
 
   if (!user && !matches(pathname, PUBLIC_PATHS)) {

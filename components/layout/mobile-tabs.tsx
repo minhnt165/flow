@@ -20,6 +20,7 @@ export function MobileTabs() {
           <Link
             key={tab.href}
             href={tab.href}
+            prefetch
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex min-h-11 flex-col items-center gap-[5px] text-[11px] no-underline",
