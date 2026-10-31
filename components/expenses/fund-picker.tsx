@@ -88,7 +88,7 @@ export function FundSelect({
         id={id}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-12 w-full cursor-pointer appearance-none rounded-[14px] border border-border bg-bg pr-10 pl-3.5 text-sm text-text outline-none focus-visible:border-accent/60"
+        className="min-h-12 w-full cursor-pointer appearance-none rounded-[14px] border border-border bg-bg pr-10 pl-3.5 text-base text-text outline-none focus-visible:border-accent/60 md:text-sm"
       >
         {funds.map((f) => (
           <option key={f.id} value={f.id}>

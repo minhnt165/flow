@@ -40,7 +40,7 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "flex min-h-[34px] grow cursor-pointer items-center justify-center rounded-full border-0 px-4 text-[13px] whitespace-nowrap transition-colors",
+              "flex min-h-10 grow cursor-pointer items-center justify-center rounded-full border-0 px-4 text-[13px] whitespace-nowrap transition-colors md:min-h-[34px]",
               size === "lg" && "min-h-9 px-[18px]",
               active
                 ? "bg-text font-semibold text-bg"
@@ -73,7 +73,7 @@ export function Chip({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3.5 text-xs transition-colors",
+        "inline-flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border px-3.5 text-xs transition-colors md:min-h-9",
         active
           ? "border-text bg-text font-semibold text-bg"
           : "border-border bg-bg font-medium text-soft hover:bg-surface-2",

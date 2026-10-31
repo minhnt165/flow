@@ -29,7 +29,7 @@ const QUICK = [
 ] as const;
 
 const inputCls =
-  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-sm text-text outline-none placeholder:text-dim focus-visible:border-accent/60 [color-scheme:dark]";
+  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none placeholder:text-dim focus-visible:border-accent/60 md:text-sm [color-scheme:dark]";
 
 function initialState(
   editing: Transaction | null,

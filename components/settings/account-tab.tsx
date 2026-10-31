@@ -9,7 +9,7 @@ import type { Profile } from "@/lib/supabase/types";
 import { t } from "@/messages/vi";
 
 const inputCls =
-  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-[15px] text-text outline-none placeholder:text-dim focus-visible:border-accent/60 disabled:opacity-60";
+  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none placeholder:text-dim focus-visible:border-accent/60 disabled:opacity-60 md:text-[15px]";
 
 function AccountForm({ profile, email }: { profile: Profile; email: string }) {
   const update = useUpdateProfile();
@@ -60,7 +60,7 @@ function AccountForm({ profile, email }: { profile: Profile; email: string }) {
             id="acc-salary"
             value={day}
             onChange={(e) => setDay(Number(e.target.value))}
-            className={`${inputCls} cursor-pointer text-sm`}
+            className={`${inputCls} cursor-pointer md:text-sm`}
           >
             {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
               <option key={d} value={d}>
@@ -73,7 +73,12 @@ function AccountForm({ profile, email }: { profile: Profile; email: string }) {
           <label htmlFor="acc-tz" className="label-caps">
             {a.timezone}
           </label>
-          <input id="acc-tz" value={a.timezoneValue} disabled className={`${inputCls} text-sm`} />
+          <input
+            id="acc-tz"
+            value={a.timezoneValue}
+            disabled
+            className={`${inputCls} md:text-sm`}
+          />
         </div>
       </div>
       <p className="m-0 -mt-2 text-xs text-muted-foreground">{a.salaryDayHint}</p>

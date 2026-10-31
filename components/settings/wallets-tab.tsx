@@ -61,7 +61,7 @@ function CategoryEditor({
         maxLength={40}
         onChange={(e) => setName(e.target.value)}
         placeholder={w.newCategory}
-        className="min-h-12 min-w-0 grow rounded-[14px] border border-border bg-bg px-3.5 text-sm text-text outline-none focus-visible:border-accent/60"
+        className="min-h-12 min-w-0 grow rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none focus-visible:border-accent/60 md:text-sm"
       />
       <Button type="submit" size="icon-lg" aria-label={t.common.save} disabled={save.isPending}>
         <Check className="size-[18px]" aria-hidden />

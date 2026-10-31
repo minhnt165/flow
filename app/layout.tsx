@@ -19,6 +19,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Bàn phím ảo thu nhỏ viewport (Android) để thanh nút Lưu dính đáy không bị che.
+  interactiveWidget: "resizes-content",
 };
 
 // Font dùng ngay ở màn đầu (chữ thường + số tiền lớn): tải sớm để giảm LCP.

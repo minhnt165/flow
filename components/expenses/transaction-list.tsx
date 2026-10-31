@@ -74,7 +74,7 @@ export function SearchBox({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t.expenses.searchPlaceholder}
-        className="min-w-0 grow border-0 bg-transparent text-[13px] text-text outline-none placeholder:text-dim"
+        className="min-w-0 grow border-0 bg-transparent text-base text-text outline-none placeholder:text-dim md:text-[13px]"
       />
     </div>
   );

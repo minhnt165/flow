@@ -24,7 +24,7 @@ import { planGoal } from "@/supabase/functions/_shared/goal.ts";
 
 const KINDS: FundKind[] = ["monthly_budget", "goal", "free"];
 const inputCls =
-  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-[15px] text-text outline-none placeholder:text-dim focus-visible:border-accent/60 [color-scheme:dark]";
+  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none placeholder:text-dim focus-visible:border-accent/60 md:text-[15px] [color-scheme:dark]";
 
 type FormState = {
   name: string;
@@ -259,7 +259,7 @@ function FundForm() {
                       id="f-countdown"
                       value={s.countdownId ?? ""}
                       onChange={(e) => set({ countdownId: e.target.value || null })}
-                      className={cn(inputCls, "cursor-pointer text-sm")}
+                      className={cn(inputCls, "cursor-pointer md:text-sm")}
                     >
                       <option value="">
                         {(countdowns.data ?? []).length ? "—" : t.fundDialog.noCountdowns}
@@ -284,7 +284,7 @@ function FundForm() {
                       min={today}
                       value={s.deadline}
                       onChange={(e) => set({ deadline: e.target.value })}
-                      className={cn(inputCls, "text-sm")}
+                      className={cn(inputCls, "md:text-sm")}
                     />
                   </div>
                 )}
@@ -329,7 +329,7 @@ function FundForm() {
                         suffix={t.fundDialog.perPeriodSuffix}
                         aria-label={t.fundDialog.autoAmount}
                         className="min-h-[42px] flex-[1_1_140px] rounded-xl bg-surface"
-                        inputClassName="text-[15px]"
+                        inputClassName="md:text-[15px]"
                       />
                       {plan.perPeriod !== null && (
                         <span

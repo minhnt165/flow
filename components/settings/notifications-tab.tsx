@@ -310,7 +310,7 @@ function RemindList({ profile }: { profile: Profile }) {
               setTime(e.target.value);
               if (evening !== null) save({ daily_summary_at: `${e.target.value}:00` });
             }}
-            className="min-h-9 cursor-pointer rounded-[10px] border border-border bg-bg px-2.5 text-[13px] text-text outline-none"
+            className="min-h-10 cursor-pointer rounded-[10px] border border-border bg-bg px-2.5 text-base text-text outline-none md:min-h-9 md:text-[13px]"
           >
             {EVENING_TIMES.map((x) => (
               <option key={x} value={x}>

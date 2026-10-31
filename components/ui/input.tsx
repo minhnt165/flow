@@ -13,7 +13,7 @@ function Input({ className, type, tone = "page", ...props }: InputProps) {
       type={type}
       data-slot="input"
       className={cn(
-        "min-h-[50px] w-full min-w-0 rounded-[14px] border border-border px-4 text-[15px] text-text [color-scheme:dark] transition-colors outline-none placeholder:text-dim focus-visible:border-accent/60 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger",
+        "min-h-[50px] w-full min-w-0 rounded-[14px] border border-border px-4 text-base text-text [color-scheme:dark] transition-colors outline-none placeholder:text-dim focus-visible:border-accent/60 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger md:text-[15px]",
         tone === "dialog" ? "bg-bg" : "bg-surface",
         className,
       )}

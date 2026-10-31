@@ -73,7 +73,7 @@ export function DataTab() {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             autoComplete="off"
-            className="min-h-12 rounded-[14px] border border-border bg-bg px-3.5 text-[15px] text-text outline-none focus-visible:border-danger/60"
+            className="min-h-12 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none focus-visible:border-danger/60 md:text-[15px]"
           />
         </div>
         <Button

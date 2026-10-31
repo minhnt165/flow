@@ -139,6 +139,15 @@
   }
   body {
     @apply bg-bg text-text antialiased;
+    /* Chạm như app: không zoom khi chạm đúp, không kéo giật trang khi mở từ Home Screen */
+    touch-action: manipulation;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
   }
   input,
   textarea {

@@ -19,7 +19,7 @@ import { useUi } from "@/stores/ui";
 
 const REMIND = [0, 1, 3, 7];
 const inputCls =
-  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-[15px] text-text outline-none placeholder:text-dim focus-visible:border-accent/60 [color-scheme:dark]";
+  "min-h-12 w-full min-w-0 rounded-[14px] border border-border bg-bg px-3.5 text-base text-text outline-none placeholder:text-dim focus-visible:border-accent/60 md:text-[15px] [color-scheme:dark]";
 
 /** Ngày tới của sự kiện (cùng quy tắc fn_next_occurrence) để xem trước. */
 function nextOccurrence(date: string, repeat: boolean, today: string) {
