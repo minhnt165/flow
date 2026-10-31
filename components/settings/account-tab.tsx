@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { logout } from "@/app/auth/actions";
+import { CardSkeleton, ErrorState } from "@/components/common/states";
 import { Button } from "@/components/ui/button";
 import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
 import type { Profile } from "@/lib/supabase/types";
@@ -96,6 +97,13 @@ function AccountForm({ profile, email }: { profile: Profile; email: string }) {
 
 export function AccountTab({ email }: { email: string }) {
   const profile = useProfile();
-  if (!profile.data) return null;
+  if (profile.isLoading) return <CardSkeleton className="min-h-[420px] max-w-[560px]" lines={6} />;
+  if (!profile.data) {
+    return (
+      <div className="relative max-w-[560px] card">
+        <ErrorState onRetry={() => profile.refetch()} />
+      </div>
+    );
+  }
   return <AccountForm key={profile.data.id} profile={profile.data} email={email} />;
 }

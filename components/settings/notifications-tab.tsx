@@ -4,6 +4,7 @@ import { Copy, ExternalLink, Send, Unlink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LogoMark } from "@/components/brand/logo";
+import { CardSkeleton, ErrorState } from "@/components/common/states";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
@@ -427,7 +428,21 @@ function MessagePreview() {
 
 export function NotificationsTab() {
   const profile = useProfile();
-  if (!profile.data) return null;
+  if (profile.isLoading) {
+    return (
+      <div className="relative flex flex-col gap-5 md:max-w-[640px]">
+        <CardSkeleton className="min-h-[150px]" />
+        <CardSkeleton className="min-h-[320px]" lines={6} />
+      </div>
+    );
+  }
+  if (!profile.data) {
+    return (
+      <div className="relative card">
+        <ErrorState onRetry={() => profile.refetch()} />
+      </div>
+    );
+  }
   return (
     <div className="relative flex flex-wrap items-start gap-6">
       <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-5">
