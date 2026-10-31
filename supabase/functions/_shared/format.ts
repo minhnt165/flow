@@ -52,6 +52,22 @@ export function formatAmountInput(raw: string): string {
   return raw.replace(/\D/g, "") === "" ? "" : formatNumber(n);
 }
 
+/**
+ * Gợi ý số tiền kiểu app ngân hàng khi đang gõ số ngắn: n × 1.000, × 10.000, × 100.000.
+ * 45 → [45.000, 450.000, 4.500.000]; 450 → [450.000, 4.500.000, 45.000.000].
+ * Không gợi ý khi n = 0 hoặc n ≥ 1.000.000 (đã là số tiền đầy đủ); bỏ các mức ≥ 10 tỷ.
+ */
+export function amountSuggestions(n: number, max = 3): number[] {
+  if (!Number.isFinite(n) || n <= 0 || n >= 1_000_000) return [];
+  const out: number[] = [];
+  for (let m = 1_000; m <= 1_000_000 && out.length < max; m *= 10) {
+    const v = n * m;
+    if (v >= 10_000_000_000) break;
+    out.push(v);
+  }
+  return out;
+}
+
 const DIGITS = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
 const SCALES = ["", "nghìn", "triệu", "tỷ"];
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  amountSuggestions,
   formatAmountInput,
   formatCompact,
   formatMillions,
@@ -8,6 +9,20 @@ import {
   parseAmountInput,
   readVND,
 } from "./format.ts";
+
+describe("amountSuggestions", () => {
+  it("gợi ý ×1.000 / ×10.000 / ×100.000 cho số đang gõ", () => {
+    expect(amountSuggestions(45)).toEqual([45_000, 450_000, 4_500_000]);
+    expect(amountSuggestions(450)).toEqual([450_000, 4_500_000, 45_000_000]);
+    expect(amountSuggestions(65_000)).toEqual([65_000_000, 650_000_000, 6_500_000_000]);
+    expect(amountSuggestions(120_000)).toEqual([120_000_000, 1_200_000_000]);
+  });
+  it("không gợi ý khi rỗng hoặc đã là số tiền đầy đủ", () => {
+    expect(amountSuggestions(0)).toEqual([]);
+    expect(amountSuggestions(1_000_000)).toEqual([]);
+    expect(amountSuggestions(4_500_000)).toEqual([]);
+  });
+});
 
 describe("formatVND", () => {
   it("dùng dấu chấm nghìn và ký hiệu ₫, không số lẻ", () => {

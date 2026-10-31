@@ -3,6 +3,7 @@
 import { ArrowLeftRight, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { AmountSuggestions } from "@/components/common/amount-suggestions";
 import { FormAlert } from "@/components/common/field";
 import { IconTile } from "@/components/common/icon-tile";
 import { Chip, Segmented } from "@/components/common/segmented";
@@ -73,6 +74,9 @@ function TransactionForm() {
     toFundId: state.toFundId ?? funds.find((f) => f.id !== (state.fundId ?? fallbackFrom))?.id,
   };
   const [amountText, setAmountText] = useState(s.amount ? formatAmountInput(String(s.amount)) : "");
+  // Gợi ý ×1.000… chỉ khi người dùng đang gõ (không gợi ý cho số điền sẵn lúc sửa).
+  const [amountTyping, setAmountTyping] = useState(false);
+  const [amountFocused, setAmountFocused] = useState(false);
   const [error, setError] = useState<string>();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -81,6 +85,7 @@ function TransactionForm() {
   const setAmount = (n: number) => {
     set({ amount: n });
     setAmountText(n ? formatAmountInput(String(n)) : "");
+    setAmountTyping(false);
   };
   const isTransfer = s.mode === "transfer";
   const catType = s.mode === "income" ? "income" : "expense";
@@ -236,15 +241,25 @@ function TransactionForm() {
             autoFocus
             placeholder="0"
             value={amountText}
+            onFocus={() => setAmountFocused(true)}
+            onBlur={() => setAmountFocused(false)}
             onChange={(e) => {
               const text = formatAmountInput(e.target.value);
               setAmountText(text);
+              setAmountTyping(true);
               set({ amount: parseAmountInput(text) });
             }}
             className="w-full min-w-0 grow border-0 bg-transparent p-0 font-display text-[52px] leading-tight font-bold tracking-[-2.5px] text-text outline-none placeholder:text-dim max-md:max-w-[260px] max-md:text-right max-md:text-[56px]"
           />
           <span className="font-display text-[26px] font-bold text-accent">₫</span>
         </div>
+        {amountFocused && amountTyping && (
+          <AmountSuggestions
+            value={s.amount}
+            onPick={setAmount}
+            className="pb-2.5 max-md:justify-center"
+          />
+        )}
         {isTransfer ? (
           <div className="flex flex-wrap gap-2 pb-3.5">
             {QUICK.map((q) => (

@@ -607,6 +607,7 @@ export const vi = {
     today: "Hôm nay",
     yesterday: "Hôm qua",
     all: "Tất cả",
+    amountSuggestions: "Gợi ý số tiền",
   },
 } as const;
 
