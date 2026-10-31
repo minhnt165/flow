@@ -7,7 +7,7 @@ import { DEMO_USER } from "@/lib/demo/fixtures";
 import { DEMO_MODE } from "@/lib/demo/mode";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { getProfile } from "@/lib/supabase/profiles";
+import { ensureProfile, getProfile } from "@/lib/supabase/profiles";
 import { getServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,9 @@ async function loadAccount() {
   const user = await getCurrentUser(sb);
   if (!user) redirect("/login");
 
-  const profile = await getProfile(sb).catch(() => null);
+  let profile = await getProfile(sb).catch(() => null);
+  // Tài khoản tạo trước khi có trigger thì chưa có hồ sơ: tạo rồi đi qua onboarding như người mới.
+  if (!profile) profile = await ensureProfile(sb).catch(() => null);
   // Lần đầu đăng nhập: hỏi ngày nhận lương trước khi vào app.
   if (profile && profile.salary_day === null) redirect("/onboarding");
   const email = user.email ?? "";

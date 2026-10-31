@@ -7,6 +7,13 @@ export async function getProfile(sb: SupabaseClient): Promise<Profile | null> {
   return data;
 }
 
+/** Tự tạo hồ sơ + dữ liệu mặc định nếu thiếu (tài khoản đăng ký trước khi có trigger). */
+export async function ensureProfile(sb: SupabaseClient): Promise<Profile> {
+  const { data, error } = await sb.rpc("ensure_profile");
+  if (error) throw error;
+  return data as Profile;
+}
+
 export async function updateProfile(sb: SupabaseClient, id: string, patch: ProfileUpdate) {
   const { data, error } = await sb
     .from("profiles")
