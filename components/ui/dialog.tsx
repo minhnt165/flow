@@ -25,7 +25,9 @@ const SIZES = {
   xl: "md:max-w-[880px]",
 } as const;
 
-// Desktop: modal giữa màn hình. Dưới 768px: trượt lên chiếm toàn màn.
+// Desktop: modal giữa màn hình. Dưới 768px: chiếm toàn màn, mờ dần + trượt nhẹ 32px.
+// Không trượt từ 100%: ô nhập autoFocus được focus lúc popup vẫn còn dưới màn hình, iOS Safari
+// cuộn tối đa để "lộ" ô đó và sau khi mở xong chỉ thấy phần đáy, không thấy ô nhập.
 function DialogContent({
   className,
   children,
@@ -42,7 +44,7 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface text-text outline-none",
-          "duration-200 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
+          "duration-200 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-8 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-8",
           "md:inset-auto md:top-1/2 md:left-1/2 md:max-h-[calc(100dvh-48px)] md:w-[calc(100%-48px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-[28px] md:border md:border-border-strong md:shadow-dialog",
           "md:data-open:slide-in-from-bottom-0 md:data-open:zoom-in-95 md:data-closed:slide-out-to-bottom-0 md:data-closed:zoom-out-95",
           SIZES[size],

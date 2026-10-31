@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
   const name = profile?.display_name || user.email?.split("@")[0] || "bạn";
 
   return (
-    <main className="relative flex min-h-dvh justify-center overflow-hidden px-6 py-10 md:items-center">
+    <main className="relative flex min-h-dvh justify-center overflow-hidden px-6 py-10 pt-[max(40px,calc(env(safe-area-inset-top)+16px))] md:items-center">
       <Glow className="-top-[160px] -right-[120px]" />
       <div className="relative flex w-full max-w-[440px] flex-col gap-8">
         <Logo size={36} />

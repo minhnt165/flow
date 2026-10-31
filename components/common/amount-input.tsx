@@ -37,8 +37,8 @@ export function AmountInput({
 }: Props) {
   const [text, setText] = useState(value ? formatAmountInput(String(value)) : "");
   const [lastValue, setLastValue] = useState(value);
-  const [focused, setFocused] = useState(false);
   // Chỉ gợi ý cho số người dùng vừa gõ, không gợi ý cho giá trị điền sẵn khi mở form sửa.
+  // Không ẩn khi ô mất focus: chip biến mất lúc chạm xuống làm nội dung dưới dồn lên, chạm trượt.
   const [typing, setTyping] = useState(false);
   if (value !== lastValue) {
     // Giá trị đổi từ bên ngoài (chip nhanh, áp dụng kịch bản…): đồng bộ lại chuỗi hiển thị.
@@ -68,8 +68,6 @@ export function AmountInput({
           placeholder={placeholder}
           value={text}
           aria-label={rest["aria-label"]}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           onChange={(e) => {
             const next = formatAmountInput(e.target.value);
             setText(next);
@@ -85,7 +83,7 @@ export function AmountInput({
         />
         {suffix && <span className="shrink-0 text-sm text-muted-foreground">{suffix}</span>}
       </div>
-      {!noSuggestions && focused && typing && <AmountSuggestions value={value} onPick={pick} />}
+      {!noSuggestions && typing && <AmountSuggestions value={value} onPick={pick} />}
     </div>
   );
 }

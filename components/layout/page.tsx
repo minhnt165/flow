@@ -2,6 +2,8 @@ import { Glow } from "@/components/common/glow";
 import { cn } from "@/lib/utils";
 
 // Khung nội dung chung của mỗi trang trong app: padding, vệt sáng góc, khoảng trống cho tab dưới.
+// Web app trên iPhone (status bar trong suốt): đệm trên theo safe-area để tiêu đề / nút đầu trang
+// không nằm dưới status bar (vừa mờ vừa không chạm được).
 export function Page({
   children,
   className,
@@ -14,7 +16,7 @@ export function Page({
   return (
     <main
       className={cn(
-        "relative flex min-w-0 flex-1 flex-col gap-6 overflow-x-clip px-[22px] pt-8 pb-32 md:gap-7 md:px-10 md:pt-8 md:pb-10",
+        "relative flex min-w-0 flex-1 flex-col gap-6 overflow-x-clip px-[22px] pt-[max(32px,calc(env(safe-area-inset-top)+16px))] pb-32 md:gap-7 md:px-10 md:pt-8 md:pb-10",
         className,
       )}
     >

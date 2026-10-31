@@ -74,9 +74,9 @@ function TransactionForm() {
     toFundId: state.toFundId ?? funds.find((f) => f.id !== (state.fundId ?? fallbackFrom))?.id,
   };
   const [amountText, setAmountText] = useState(s.amount ? formatAmountInput(String(s.amount)) : "");
-  // Gợi ý ×1.000… chỉ khi người dùng đang gõ (không gợi ý cho số điền sẵn lúc sửa).
+  // Gợi ý ×1.000… chỉ khi người dùng đang gõ (không gợi ý cho số điền sẵn lúc sửa). Không ẩn khi ô
+  // mất focus: hàng chip biến mất ngay lúc chạm xuống làm lưới danh mục dồn lên, chạm trượt mục.
   const [amountTyping, setAmountTyping] = useState(false);
-  const [amountFocused, setAmountFocused] = useState(false);
   const [error, setError] = useState<string>();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -241,8 +241,6 @@ function TransactionForm() {
             autoFocus
             placeholder="0"
             value={amountText}
-            onFocus={() => setAmountFocused(true)}
-            onBlur={() => setAmountFocused(false)}
             onChange={(e) => {
               const text = formatAmountInput(e.target.value);
               setAmountText(text);
@@ -253,7 +251,7 @@ function TransactionForm() {
           />
           <span className="font-display text-[26px] font-bold text-accent">₫</span>
         </div>
-        {amountFocused && amountTyping && (
+        {amountTyping && (
           <AmountSuggestions
             value={s.amount}
             onPick={setAmount}

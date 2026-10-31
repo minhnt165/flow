@@ -7,7 +7,7 @@ import { t } from "@/messages/vi";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-bg md:flex-row">
-      <section className="relative flex flex-col justify-between gap-12 overflow-hidden border-surface-2 bg-surface px-6 py-8 md:min-h-dvh md:flex-1 md:border-r md:px-12 md:py-10">
+      <section className="relative flex flex-col justify-between gap-12 overflow-hidden border-surface-2 bg-surface px-6 py-8 pt-[max(32px,calc(env(safe-area-inset-top)+16px))] md:min-h-dvh md:flex-1 md:border-r md:px-12 md:py-10">
         <Glow className="-bottom-[200px] -left-[160px]" size={560} color="rgb(212 240 74 / 0.18)" />
         <Logo size={36} className="relative [&>span:last-child]:text-xl" />
 
