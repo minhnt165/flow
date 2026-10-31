@@ -15,6 +15,7 @@ const TABS = [
   { href: "/expenses", label: t.expenses.tabs.overview },
   { href: "/expenses/funds", label: t.expenses.tabs.funds },
   { href: "/expenses/transactions", label: t.expenses.tabs.transactions },
+  { href: "/expenses/stats", label: t.expenses.tabs.stats },
 ];
 
 export function ExpensesHeader() {

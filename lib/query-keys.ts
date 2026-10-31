@@ -12,6 +12,7 @@ export const qk = {
   transactions: (f: TransactionFilter) => ["transactions", f] as const,
   transactionsAll: ["transactions"] as const,
   summary: (month: string) => ["summary", month] as const,
+  monthly: (month: string, months: number) => ["monthly", month, months] as const,
   rules: ["rules"] as const,
   countdowns: ["countdowns"] as const,
   bills: ["bills"] as const,
@@ -28,5 +29,6 @@ export const TRANSACTION_DEPENDENTS = [
   ["goals"],
   ["fund-inflow"],
   ["summary"],
+  ["monthly"],
   ["bills"],
 ] as const;

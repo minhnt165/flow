@@ -11,10 +11,10 @@ import { useBills } from "@/hooks/use-bills";
 import { useFundMonth } from "@/hooks/use-funds";
 import { useLookups } from "@/hooks/use-lookups";
 import { useMonth } from "@/hooks/use-month";
-import { useMonthSummary, useTransactions } from "@/hooks/use-transactions";
+import { useMonthlyTotals, useMonthSummary, useTransactions } from "@/hooks/use-transactions";
 import { buttonVariants } from "@/components/ui/button";
 import { tone } from "@/lib/colors";
-import { formatDayMonth, formatMonth } from "@/lib/dates";
+import { formatDayMonth, formatMonth, formatMonthTick } from "@/lib/dates";
 import { formatCompact, formatMillions, formatNumber, formatVND } from "@/lib/money";
 import type { MonthSummary } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
@@ -153,6 +153,87 @@ function CategoryCard() {
   );
 }
 
+const CHART_MONTHS = 6;
+
+/** Cột tổng chi 6 tháng kết thúc tại tháng đang xem; bấm cột để chuyển tháng. */
+function SpendingChart() {
+  const { month, setMonth } = useMonth();
+  const q = useMonthlyTotals(month, CHART_MONTHS);
+  const rows = q.data ?? [];
+  const max = Math.max(1, ...rows.map((r) => r.expense));
+  const avg = rows.length ? rows.reduce((s, r) => s + r.expense, 0) / rows.length : 0;
+
+  return (
+    <div className="flex flex-col gap-4 md:card md:p-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="m-0 text-[15px] font-semibold">{t.expenses.chart}</h2>
+        {rows.length > 0 && (
+          <span className="text-[13px] text-muted-foreground">
+            {t.expenses.chartAvg(formatCompact(Math.round(avg)))}
+          </span>
+        )}
+      </div>
+      {q.isLoading ? (
+        <div className="h-[150px] animate-pulse rounded-2xl bg-surface-2/50" />
+      ) : q.isError ? (
+        <ErrorState onRetry={() => q.refetch()} className="py-4" />
+      ) : (
+        <figure className="m-0 flex flex-col gap-2" aria-label={t.expenses.chartLabel}>
+          <div className="grid grid-cols-6 items-end gap-2.5">
+            {rows.map((r) => {
+              const active = r.month_start === month;
+              const label = t.expenses.chartBar(formatMonth(r.month_start), formatVND(r.expense));
+              return (
+                <button
+                  key={r.month_start}
+                  type="button"
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={active}
+                  onClick={() => setMonth(r.month_start)}
+                  className="group flex cursor-pointer flex-col items-center gap-1 rounded-lg border-0 bg-transparent p-0 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <span className="h-4 font-display text-[11px] leading-4 font-bold text-text">
+                    {active && r.expense > 0 ? formatCompact(r.expense) : ""}
+                  </span>
+                  <span className="flex h-[120px] w-full items-end justify-center">
+                    <span
+                      className="w-full max-w-6 rounded-t-[4px] transition-[height,background-color] duration-300 group-hover:opacity-90"
+                      style={{
+                        height: `${(r.expense * 100) / max}%`,
+                        minHeight: r.expense > 0 ? 4 : 0,
+                        background: active
+                          ? "var(--accent)"
+                          : "color-mix(in oklab, var(--accent) 32%, var(--surface-2))",
+                      }}
+                    />
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[11px] leading-4",
+                      active ? "font-semibold text-text" : "text-muted-foreground",
+                    )}
+                  >
+                    {formatMonthTick(r.month_start)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <figcaption className="text-center text-[11px] text-dim">
+            {t.expenses.chartPick}
+            <span className="sr-only">
+              {rows
+                .map((r) => t.expenses.chartBar(formatMonth(r.month_start), formatVND(r.expense)))
+                .join(", ")}
+            </span>
+          </figcaption>
+        </figure>
+      )}
+    </div>
+  );
+}
+
 function BillsCard() {
   const q = useBills();
   const { catById } = useLookups();
@@ -242,6 +323,7 @@ export function ExpensesOverview() {
     <>
       <div className="relative grid grid-cols-1 gap-6 md:grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))] md:gap-5">
         <BudgetHighlight />
+        <SpendingChart />
         <CategoryCard />
         <BillsCard />
       </div>

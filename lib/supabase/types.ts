@@ -238,6 +238,9 @@ export type MonthSummary = {
   by_fund: { fund_id: string; spent: number }[];
 };
 
+/** Một dòng của fn_monthly_totals: tổng chi / thu của một tháng. */
+export type MonthlyTotal = { month_start: string; expense: number; income: number };
+
 /** Việc cần làm. Hạn tuỳ chọn; done_at null = chưa xong. */
 export type Todo = {
   id: string;

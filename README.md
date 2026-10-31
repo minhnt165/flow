@@ -40,7 +40,7 @@ Chế độ demo (`NEXT_PUBLIC_DEMO_MODE=1`) thay client Supabase bằng kho d�
 
 ### Test SQL
 
-`supabase/tests/*.test.ts` chạy **toàn bộ migration thật** trên Postgres nhúng (PGlite, không cần Docker). Bộ test dùng một lớp giả lập tối thiểu của Supabase: role `anon` / `authenticated` / `service_role`, `auth.users`, `auth.uid()`. Test kiểm tra số dư quỹ, ngân sách tháng theo giờ VN, tiến độ mục tiêu, countdown lặp theo chu kỳ tháng, hoá đơn định kỳ (hạn tới, đánh dấu đã trả), việc cần làm (hạn theo giờ người dùng), thói quen (chuỗi ngày, số ngày trong tuần), ghi chú (updated_at), RLS, job tự động góp, liên kết Telegram và thông báo. Migration nào cần pg_cron / Vault thì đánh dấu `-- pglite:skip`.
+`supabase/tests/*.test.ts` chạy **toàn bộ migration thật** trên Postgres nhúng (PGlite, không cần Docker). Bộ test dùng một lớp giả lập tối thiểu của Supabase: role `anon` / `authenticated` / `service_role`, `auth.users`, `auth.uid()`. Test kiểm tra số dư quỹ, ngân sách tháng theo giờ VN, tổng chi theo tháng, tiến độ mục tiêu, countdown lặp theo chu kỳ tháng, hoá đơn định kỳ (hạn tới, đánh dấu đã trả), việc cần làm (hạn theo giờ người dùng), thói quen (chuỗi ngày, số ngày trong tuần), ghi chú (updated_at), RLS, job tự động góp, liên kết Telegram và thông báo. Migration nào cần pg_cron / Vault thì đánh dấu `-- pglite:skip`.
 
 ### E2E
 

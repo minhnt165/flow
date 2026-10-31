@@ -216,6 +216,30 @@ describe("ngân sách tháng (v_fund_month)", () => {
     const byCat = s.by_category as { name: string; amount: number }[];
     expect(byCat.map((c) => c.name)).toEqual(["Ăn uống", "Mua sắm", "Hoá đơn"]);
   });
+
+  it("fn_monthly_totals: n tháng liên tiếp kết thúc tại tháng xem, tháng trống = 0, ranh giới theo giờ VN", async () => {
+    const uid = await createUser(db, "monthly@example.com");
+    const { q, defaultFund, cat } = await ids(uid);
+    await q(
+      `insert into transactions (type, amount, fund_id, category_id, occurred_at) values
+        ('expense', 500000, $1, $2, '2026-08-15T08:00:00+07:00'),
+        ('expense', 300000, $1, $2, '2026-09-30T23:30:00+07:00'),
+        ('expense', 700000, $1, $2, '2026-10-01T00:10:00+07:00'),
+        ('income', 9000000, $1, $3, '2026-10-05T08:00:00+07:00'),
+        ('expense', 123000, $1, $2, '2026-11-02T08:00:00+07:00')`,
+      [defaultFund, cat("Ăn uống"), cat("Lương", "income")],
+    );
+    const rows = await q<{ month_start: string; expense: string; income: string }>(
+      "select month_start::text, expense, income from fn_monthly_totals($1, '2026-10-20', 4)",
+      [uid],
+    );
+    expect(rows.map((r) => [r.month_start, num(r.expense), num(r.income)])).toEqual([
+      ["2026-07-01", 0, 0],
+      ["2026-08-01", 500000, 0],
+      ["2026-09-01", 300000, 0],
+      ["2026-10-01", 700000, 9000000],
+    ]);
+  });
 });
 
 describe("tiến độ quỹ mục tiêu (v_fund_goal_progress)", () => {

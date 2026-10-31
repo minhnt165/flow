@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/
 import { useUserId } from "@/components/session";
 import { qk, TRANSACTION_DEPENDENTS } from "@/lib/query-keys";
 import { getBrowserClient } from "@/lib/supabase/client";
-import { getMonthSummary } from "@/lib/supabase/reports";
+import { getMonthlyTotals, getMonthSummary } from "@/lib/supabase/reports";
 import { createSalaryTransferRule, listRecurringRules } from "@/lib/supabase/recurring-rules";
 import {
   createTransaction,
@@ -33,6 +33,17 @@ export function useMonthSummary(month: string) {
     queryKey: qk.summary(month),
     queryFn: () => getMonthSummary(sb(), userId!, month),
     enabled: Boolean(userId),
+  });
+}
+
+/** Tổng chi / thu của `months` tháng kết thúc tại `month` (biểu đồ cột trang Chi tiêu). */
+export function useMonthlyTotals(month: string, months = 6) {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: qk.monthly(month, months),
+    queryFn: () => getMonthlyTotals(sb(), userId!, month, months),
+    enabled: Boolean(userId),
+    placeholderData: (prev) => prev,
   });
 }
 

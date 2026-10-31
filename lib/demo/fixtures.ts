@@ -245,6 +245,28 @@ export function buildFixtures() {
       }),
     );
   });
+  // Chi các tháng trước (biểu đồ cột "Chi theo tháng").
+  [-5, -4, -3, -2, -1].forEach((k, i) => {
+    const m = addMonths(m0, k);
+    transactions.push(
+      tx({
+        type: "expense",
+        amount: [5_800_000, 7_100_000, 6_300_000, 8_900_000, 6_750_000][i],
+        fund_id: living.id,
+        category_id: c("Ăn uống"),
+        note: "Chi tiêu trong tháng",
+        occurred_at: at(addDays(m, 14), "12:00"),
+      }),
+      tx({
+        type: "expense",
+        amount: [930_000, 980_000, 910_000, 1_250_000, 940_000][i],
+        fund_id: living.id,
+        category_id: c("Hoá đơn"),
+        note: "Điện + Internet",
+        occurred_at: at(addDays(m, 9), "08:30"),
+      }),
+    );
+  });
   // Tháng này.
   const d = (n: number) => (addDays(m0, n) <= today ? addDays(m0, n) : today);
   transactions.push(

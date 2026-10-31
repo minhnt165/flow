@@ -371,6 +371,10 @@ class Store {
           byCat.set(t.category_id!, (byCat.get(t.category_id!) ?? 0) + t.amount),
         );
         const goalIds = new Set(this.db.funds.filter((f) => f.kind === "goal").map((f) => f.id));
+        const byFund = new Map<string, number>();
+        tx.filter((t) => t.type === "expense").forEach((t) =>
+          byFund.set(t.fund_id, (byFund.get(t.fund_id) ?? 0) + t.amount),
+        );
         return {
           month: m0,
           total_expense: sum(tx.filter((t) => t.type === "expense")),
@@ -391,7 +395,7 @@ class Store {
               };
             })
             .sort((a, b) => b.amount - a.amount),
-          by_fund: [],
+          by_fund: [...byFund.entries()].map(([fund_id, spent]) => ({ fund_id, spent })),
         };
       }
       case "fn_fund_monthly_inflow": {
@@ -411,6 +415,21 @@ class Store {
             )
             .reduce((s, t) => s + t.amount, 0);
           return { month_start: m, amount };
+        });
+      }
+      case "fn_monthly_totals": {
+        const months = Number(args.p_months ?? 6);
+        const last = monthStart(String(args.p_month));
+        return Array.from({ length: months }, (_, i) => {
+          const m = addMonths(last, i - months + 1);
+          const from = toIso(m, "00:00");
+          const to = toIso(addMonths(m, 1), "00:00");
+          const inMonth = this.db.transactions.filter(
+            (t) => t.occurred_at >= from && t.occurred_at < to,
+          );
+          const sum = (type: Transaction["type"]) =>
+            inMonth.filter((t) => t.type === type).reduce((s, t) => s + t.amount, 0);
+          return { month_start: m, expense: sum("expense"), income: sum("income") };
         });
       }
       case "fn_pay_bill":
