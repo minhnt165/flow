@@ -57,6 +57,13 @@ export function nthSalaryDateAfter(after: string, salaryDay: number, k: number):
   return after;
 }
 
+/** Ngày đến hạn đầu tiên ≥ `from` của hoá đơn rơi vào `dayOfMonth` (tháng ngắn lấy ngày cuối). */
+export function dueDateOnOrAfter(from: string, dayOfMonth: number): string {
+  const [y, m] = from.split("-").map(Number);
+  const thisMonth = salaryDateOf(y, m, dayOfMonth);
+  return thisMonth >= from ? thisMonth : nthSalaryDateAfter(from, dayOfMonth, 1);
+}
+
 export function roundUp(n: number, step = PER_PERIOD_STEP): number {
   return Math.ceil(n / step) * step;
 }

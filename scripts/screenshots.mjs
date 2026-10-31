@@ -37,6 +37,12 @@ const SHOTS = [
     path: "/countdowns",
     action: async (p) => p.getByRole("button", { name: "Thêm sự kiện" }).first().click(),
   },
+  { name: "bills", path: "/bills" },
+  {
+    name: "bill-add",
+    path: "/bills",
+    action: async (p) => p.getByRole("button", { name: "Thêm hoá đơn" }).first().click(),
+  },
   { name: "settings", path: "/settings?tab=notifications" },
   { name: "settings-data", path: "/settings?tab=data" },
   { name: "home", path: "/" },

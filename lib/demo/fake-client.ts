@@ -3,13 +3,19 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDays, addMonths, APP_TZ, daysBetween, localDate, monthStart, toIso } from "@/lib/dates";
 import type {
+  BillView,
   CountdownView,
   FundMonth,
   FundWithBalance,
   GoalProgress,
+  RecurringRule,
   Transaction,
 } from "@/lib/supabase/types";
-import { payPeriods, perPeriodNeeded } from "@/supabase/functions/_shared/goal.ts";
+import {
+  nthSalaryDateAfter,
+  payPeriods,
+  perPeriodNeeded,
+} from "@/supabase/functions/_shared/goal.ts";
 import { buildFixtures, DEMO_USER, type Fixtures } from "./fixtures";
 
 type Row = Record<string, unknown>;
@@ -169,10 +175,73 @@ class Store {
       });
   }
 
+  /** v_bills: hoá đơn kèm số ngày tới hạn và lần trả gần nhất. */
+  bills(): BillView[] {
+    const today = this.today();
+    const monthFrom = toIso(monthStart(today), "00:00");
+    return this.db.rules
+      .filter((r) => r.kind === "bill")
+      .map((r) => {
+        const paid = this.db.transactions
+          .filter((t) => t.recurring_rule_id === r.id && t.type === "expense")
+          .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))[0];
+        return {
+          id: r.id,
+          user_id: r.user_id,
+          name: r.name ?? "",
+          amount: r.amount,
+          fund_id: r.fund_id,
+          category_id: r.category_id,
+          day_of_month: r.day_of_month,
+          next_run_on: r.next_run_on,
+          active: r.active,
+          created_at: String((r as Row).created_at ?? ""),
+          today,
+          days_left: daysBetween(today, r.next_run_on),
+          last_paid_at: paid?.occurred_at ?? null,
+          last_paid_amount: paid?.amount ?? null,
+          paid_this_month: Boolean(paid && paid.occurred_at >= monthFrom),
+        };
+      });
+  }
+
+  /** fn_pay_bill: ghi khoản chi và dời hạn tới ngày đến hạn đầu tiên sau max(hạn, ngày trả). */
+  payBill(ruleId: string, amount: number | null, paidAt: string | null) {
+    const rule = this.db.rules.find((r) => r.id === ruleId && r.kind === "bill") as
+      RecurringRule | undefined;
+    if (!rule) throw new Error("bill_not_found");
+    const occurredAt = paidAt ?? new Date().toISOString();
+    const paidOn = localDate(new Date(occurredAt), APP_TZ);
+    const category =
+      rule.category_id ??
+      this.db.categories.find((c) => c.type === "expense" && c.name === "Hoá đơn")?.id ??
+      this.db.categories.find((c) => c.type === "expense")!.id;
+    const tx: Transaction = {
+      id: crypto.randomUUID(),
+      user_id: DEMO_USER.id,
+      type: "expense",
+      amount: amount ?? rule.amount,
+      fund_id: rule.fund_id,
+      to_fund_id: null,
+      category_id: category,
+      note: rule.name,
+      occurred_at: occurredAt,
+      source: "web",
+      recurring_rule_id: rule.id,
+      created_at: new Date().toISOString(),
+    };
+    this.db.transactions.push(tx);
+    const after = rule.next_run_on > paidOn ? rule.next_run_on : paidOn;
+    rule.next_run_on = nthSalaryDateAfter(after, rule.day_of_month, 1);
+    return { transaction_id: tx.id, amount: tx.amount, next_run_on: rule.next_run_on };
+  }
+
   table(name: string): Row[] {
     switch (name) {
       case "v_fund_balances":
         return this.balances();
+      case "v_bills":
+        return this.bills();
       case "v_fund_goal_progress":
         return this.goals();
       case "v_countdowns":
@@ -265,6 +334,12 @@ class Store {
           return { month_start: m, amount };
         });
       }
+      case "fn_pay_bill":
+        return this.payBill(
+          String(args.p_rule_id),
+          (args.p_amount as number | null) ?? null,
+          (args.p_paid_at as string | null) ?? null,
+        );
       case "create_telegram_link_code":
         return { code: "7X4K29", expires_at: new Date(Date.now() + 10 * 60_000).toISOString() };
       case "disconnect_telegram":

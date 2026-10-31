@@ -529,6 +529,140 @@ describe("Telegram", () => {
   });
 });
 
+describe("hoá đơn định kỳ (v_bills, fn_pay_bill)", () => {
+  let uid: string;
+  let rent: string;
+
+  beforeAll(async () => {
+    uid = await createUser(db, "bills@example.com");
+    const { q, defaultFund, cat } = await ids(uid);
+    [{ id: rent }] = await q<{ id: string }>(
+      `insert into recurring_rules (kind, name, amount, fund_id, category_id, day_of_month, next_run_on)
+       values ('bill', 'Tiền nhà', 4500000, $1, $2, 5, '2026-11-05') returning id`,
+      [defaultFund, cat("Hoá đơn")],
+    );
+  });
+
+  it("v_bills: số ngày tới hạn, chưa trả trong tháng; hoá đơn bắt buộc có tên", async () => {
+    const { q, defaultFund } = await ids(uid);
+    const [b] = await q(
+      "select days_left, paid_this_month, last_paid_at from v_bills where id = $1",
+      [rent],
+    );
+    expect(b).toEqual({ days_left: 6, paid_this_month: false, last_paid_at: null });
+    await expect(
+      q(
+        "insert into recurring_rules (kind, amount, fund_id, day_of_month, next_run_on) values ('bill', 1000, $1, 1, '2026-11-01')",
+        [defaultFund],
+      ),
+    ).rejects.toThrow(/recurring_bill_needs_name/);
+  });
+
+  it("fn_pay_bill ghi khoản chi đúng danh mục / quỹ, dời hạn sang tháng sau; trả sớm vẫn sang tháng sau hạn", async () => {
+    const { q, defaultFund } = await ids(uid);
+    const [{ r }] = await q<{ r: Record<string, unknown> }>("select fn_pay_bill($1) as r", [rent]);
+    expect(num(r.amount)).toBe(4500000);
+    expect(r.next_run_on).toBe("2026-12-05");
+
+    const [tx] = await q(
+      `select t.type, t.amount, t.note, t.source, t.fund_id, c.name as category
+       from transactions t join categories c on c.id = t.category_id where t.id = $1`,
+      [r.transaction_id],
+    );
+    expect(tx).toMatchObject({
+      type: "expense",
+      note: "Tiền nhà",
+      source: "web",
+      fund_id: defaultFund,
+      category: "Hoá đơn",
+    });
+    expect(num(tx.amount)).toBe(4500000);
+
+    const [b] = await q(
+      "select days_left, paid_this_month, last_paid_amount from v_bills where id = $1",
+      [rent],
+    );
+    expect(b.days_left).toBe(36);
+    expect(b.paid_this_month).toBe(true);
+    expect(num(b.last_paid_amount)).toBe(4500000);
+  });
+
+  it("số tiền thật khác số dự kiến; hoá đơn quá hạn nhiều tháng chỉ dời tới hạn gần nhất sau ngày trả", async () => {
+    const { q, defaultFund } = await ids(uid);
+    const [{ id: power }] = await q<{ id: string }>(
+      `insert into recurring_rules (kind, name, amount, fund_id, day_of_month, next_run_on)
+       values ('bill', 'Tiền điện', 800000, $1, 31, '2026-08-31') returning id`,
+      [defaultFund],
+    );
+    const [before] = await q("select days_left from v_bills where id = $1", [power]);
+    expect(before.days_left).toBe(-60);
+
+    const [{ r }] = await q<{ r: Record<string, unknown> }>(
+      "select fn_pay_bill($1, 1234000, '2026-10-30T09:00:00+07:00') as r",
+      [power],
+    );
+    expect(num(r.amount)).toBe(1234000);
+    expect(r.next_run_on).toBe("2026-10-31");
+    // Không chọn danh mục → rơi về "Hoá đơn".
+    const [tx] = await q(
+      "select c.name from transactions t join categories c on c.id = t.category_id where t.id = $1",
+      [r.transaction_id],
+    );
+    expect(tx.name).toBe("Hoá đơn");
+
+    await expect(q("select fn_pay_bill($1, 0)", [power])).rejects.toThrow(
+      /amount_must_be_positive/,
+    );
+  });
+
+  it("RLS: người khác không trả hộ được; bot đánh dấu đã trả dùng cùng quy tắc", async () => {
+    const other = await createUser(db, "bills-other@example.com");
+    const qo = asUser(db, other);
+    await expect(qo("select fn_pay_bill($1)", [rent])).rejects.toThrow(/bill_not_found/);
+
+    const { q } = await ids(uid);
+    const [{ r: code }] = await q<{ r: { code: string } }>(
+      "select create_telegram_link_code() as r",
+    );
+    const svc = asService(db);
+    await svc("select link_telegram($1, 424242, null)", [code.code]);
+    const [{ res }] = await svc<{ res: Record<string, unknown> }>(
+      "select fn_mark_bill_paid($1, 424242) as res",
+      [rent],
+    );
+    expect(res).toMatchObject({ status: "ok", name: "Tiền nhà" });
+    const [after] = await q("select next_run_on::text as next from recurring_rules where id = $1", [
+      rent,
+    ]);
+    expect(after.next).toBe("2027-01-05");
+    const [{ res: wrongChat }] = await svc<{ res: Record<string, unknown> }>(
+      "select fn_mark_bill_paid($1, 1) as res",
+      [rent],
+    );
+    expect(wrongChat.status).toBe("not_found");
+  });
+
+  it("fn_daily_notifications: hoá đơn tới hạn trong 3 ngày được nhắc, hoá đơn tạm dừng thì không", async () => {
+    const { q, defaultFund } = await ids(uid);
+    await q(
+      `insert into recurring_rules (kind, name, amount, fund_id, day_of_month, next_run_on, active) values
+        ('bill', 'Internet', 300000, $1, 2, '2026-11-02', true),
+        ('bill', 'Gym', 500000, $1, 1, '2026-11-01', false)`,
+      [defaultFund],
+    );
+    const svc = asService(db);
+    const rows = await svc<{ kind: string; payload: Record<string, unknown> }>(
+      "select kind, payload from fn_daily_notifications(null) where user_id = $1 and kind = 'bill'",
+      [uid],
+    );
+    // "Tiền điện" (hạn 31/10, còn 1 ngày) cũng được nhắc; "Gym" tạm dừng thì không.
+    expect(rows.map((r) => [r.payload.name, r.payload.days_left]).sort()).toEqual([
+      ["Internet", 3],
+      ["Tiền điện", 1],
+    ]);
+  });
+});
+
 describe("xoá tài khoản", () => {
   it("delete_account xoá sạch dữ liệu của người dùng (kể cả quỹ mặc định)", async () => {
     const uid = await createUser(db, "bye@example.com");

@@ -14,6 +14,7 @@ export const qk = {
   summary: (month: string) => ["summary", month] as const,
   rules: ["rules"] as const,
   countdowns: ["countdowns"] as const,
+  bills: ["bills"] as const,
 };
 
 /** Những truy vấn phụ thuộc vào giao dịch: làm mới sau mỗi lần thêm/sửa/xoá. */
@@ -24,4 +25,5 @@ export const TRANSACTION_DEPENDENTS = [
   ["goals"],
   ["fund-inflow"],
   ["summary"],
+  ["bills"],
 ] as const;

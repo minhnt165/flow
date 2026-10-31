@@ -161,6 +161,33 @@ export type RecurringRule = {
   active: boolean;
 };
 
+/** Hoá đơn định kỳ = recurring_rules kind 'bill'. */
+export type BillInput = {
+  name: string;
+  amount: number;
+  fund_id: string;
+  category_id: string | null;
+  day_of_month: number;
+  /** Hạn tới; client tính bằng dueDateOnOrAfter khi tạo hoặc đổi ngày. */
+  next_run_on: string;
+  active: boolean;
+};
+
+/** Dòng của view v_bills. */
+export type BillView = BillInput & {
+  id: string;
+  user_id: string;
+  created_at: string;
+  today: string;
+  /** Âm = quá hạn. */
+  days_left: number;
+  last_paid_at: string | null;
+  last_paid_amount: number | null;
+  paid_this_month: boolean;
+};
+
+export type PayBillResult = { transaction_id: string; amount: number; next_run_on: string };
+
 export type Countdown = {
   id: string;
   user_id: string;

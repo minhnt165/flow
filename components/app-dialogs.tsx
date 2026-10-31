@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { BillDialog } from "@/components/bills/bill-dialog";
+import { PayBillDialog } from "@/components/bills/pay-bill-dialog";
 import { CountdownDialog } from "@/components/countdowns/countdown-dialog";
 import { FundDialog } from "@/components/expenses/fund-dialog";
 import { TransactionDialog } from "@/components/expenses/transaction-dialog";
@@ -19,7 +21,7 @@ export function AppDialogs() {
       if (e.key.toLowerCase() !== "n" || e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target))
         return;
       const s = useUi.getState();
-      if (s.tx.open || s.fund.open || s.countdown.open) return;
+      if (s.tx.open || s.fund.open || s.countdown.open || s.bill.open || s.payBill.open) return;
       e.preventDefault();
       s.openTx("expense");
     };
@@ -40,6 +42,8 @@ export function AppDialogs() {
       <TransactionDialog />
       <FundDialog />
       <CountdownDialog />
+      <BillDialog />
+      <PayBillDialog />
     </>
   );
 }

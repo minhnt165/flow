@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/common/coming-soon";
+import { BillsView } from "@/components/bills/bills-view";
+import { Page } from "@/components/layout/page";
 import { t } from "@/messages/vi";
 
-export const metadata: Metadata = { title: t.nav.bills };
+export const metadata: Metadata = { title: t.bills.title };
 
-export default function Page() {
-  return <ComingSoon title={t.nav.bills} />;
+export default function BillsPage() {
+  return (
+    <Page>
+      <BillsView />
+    </Page>
+  );
 }

@@ -7,14 +7,17 @@ import { IconTile } from "@/components/common/icon-tile";
 import { StackedBar } from "@/components/common/progress-bar";
 import { CardSkeleton, EmptyState, ErrorState } from "@/components/common/states";
 import { SearchBox, TransactionList } from "@/components/expenses/transaction-list";
+import { useBills } from "@/hooks/use-bills";
 import { useFundMonth } from "@/hooks/use-funds";
 import { useLookups } from "@/hooks/use-lookups";
 import { useMonth } from "@/hooks/use-month";
-import { useMonthSummary, useRecurringRules, useTransactions } from "@/hooks/use-transactions";
+import { useMonthSummary, useTransactions } from "@/hooks/use-transactions";
+import { buttonVariants } from "@/components/ui/button";
 import { tone } from "@/lib/colors";
-import { APP_TZ, daysBetween, formatDayMonth, formatMonth, localDate } from "@/lib/dates";
+import { formatDayMonth, formatMonth } from "@/lib/dates";
 import { formatCompact, formatMillions, formatNumber, formatVND } from "@/lib/money";
 import type { MonthSummary } from "@/lib/supabase/types";
+import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
 import { useUi } from "@/stores/ui";
 
@@ -151,36 +154,61 @@ function CategoryCard() {
 }
 
 function BillsCard() {
-  const rules = useRecurringRules();
-  const today = localDate(new Date(), APP_TZ);
-  const bills = (rules.data ?? []).filter((r) => r.kind === "bill").slice(0, 3);
+  const q = useBills();
+  const { catById } = useLookups();
+  const bills = (q.data ?? [])
+    .filter((b) => b.active)
+    .sort((a, b) => a.days_left - b.days_left)
+    .slice(0, 3);
   return (
     <div className="hidden flex-col gap-4 card p-6 md:flex">
-      <h2 className="m-0 text-[15px] font-semibold">{t.expenses.upcomingBills}</h2>
-      {rules.isLoading ? null : bills.length === 0 ? (
+      <div className="flex items-baseline justify-between">
+        <h2 className="m-0 text-[15px] font-semibold">{t.expenses.upcomingBills}</h2>
+        <Link href="/bills" className="text-[13px] font-medium no-underline">
+          {t.expenses.allBills}
+        </Link>
+      </div>
+      {q.isLoading ? null : bills.length === 0 ? (
         <EmptyState
           icon={Zap}
           title={t.expenses.noBills}
           body={t.expenses.noBillsBody}
           className="py-2"
+          action={
+            <Link href="/bills" className={buttonVariants({ variant: "secondary", size: "sm" })}>
+              {t.expenses.addBill}
+            </Link>
+          }
         />
       ) : (
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
-          {bills.map((b) => (
-            <li key={b.id} className="flex items-center gap-3">
-              <IconTile icon="zap" color="green" size={36} />
-              <span className="flex min-w-0 grow flex-col gap-0.5">
-                <span className="truncate text-sm font-medium">{b.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {t.expenses.billDue(
-                    formatDayMonth(b.next_run_on),
-                    Math.max(0, daysBetween(today, b.next_run_on)),
-                  )}
-                </span>
-              </span>
-              <span className="font-display text-sm font-bold">{formatNumber(b.amount)}</span>
-            </li>
-          ))}
+          {bills.map((b) => {
+            const cat = b.category_id ? catById.get(b.category_id) : undefined;
+            return (
+              <li key={b.id}>
+                <Link
+                  href="/bills"
+                  className="flex items-center gap-3 text-text no-underline hover:text-text"
+                >
+                  <IconTile icon={cat?.icon ?? "zap"} color={cat?.color ?? "green"} size={36} />
+                  <span className="flex min-w-0 grow flex-col gap-0.5">
+                    <span className="truncate text-sm font-medium">{b.name}</span>
+                    <span
+                      className={cn(
+                        "text-xs text-muted-foreground",
+                        b.days_left < 0 && "text-danger",
+                      )}
+                    >
+                      {b.days_left < 0
+                        ? `${t.bills.due(formatDayMonth(b.next_run_on))} · ${t.bills.overdueBy(-b.days_left)}`
+                        : t.expenses.billDue(formatDayMonth(b.next_run_on), b.days_left)}
+                    </span>
+                  </span>
+                  <span className="font-display text-sm font-bold">{formatNumber(b.amount)}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

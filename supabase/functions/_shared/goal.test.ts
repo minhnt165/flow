@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  dueDateOnOrAfter,
   forecastScenarios,
   payPeriods,
   perPeriodNeeded,
   planGoal,
   salaryDatesBetween,
 } from "./goal.ts";
+
+describe("hạn hoá đơn", () => {
+  it("hạn đầu tiên từ hôm nay trở đi, tháng ngắn lấy ngày cuối", () => {
+    expect(dueDateOnOrAfter("2026-10-30", 5)).toBe("2026-11-05");
+    expect(dueDateOnOrAfter("2026-10-30", 30)).toBe("2026-10-30");
+    expect(dueDateOnOrAfter("2026-10-30", 31)).toBe("2026-10-31");
+    expect(dueDateOnOrAfter("2027-02-10", 31)).toBe("2027-02-28");
+  });
+});
 
 describe("kỳ lương", () => {
   it("đếm kỳ lương today < d < hạn, cùng quy tắc với SQL", () => {

@@ -1,7 +1,13 @@
 "use client";
 
 import { create } from "zustand";
-import type { CountdownView, Fund, PaletteColor, Transaction } from "@/lib/supabase/types";
+import type {
+  BillView,
+  CountdownView,
+  Fund,
+  PaletteColor,
+  Transaction,
+} from "@/lib/supabase/types";
 
 export type TxMode = "expense" | "income" | "transfer";
 
@@ -35,6 +41,15 @@ type UiState = {
   countdown: { open: boolean; editing: CountdownView | null };
   openCountdown: (editing?: CountdownView | null) => void;
   closeCountdown: () => void;
+
+  bill: { open: boolean; editing: BillView | null };
+  openBill: (editing?: BillView | null) => void;
+  closeBill: () => void;
+
+  /** Hộp thoại "Đánh dấu đã trả" cho một hoá đơn. */
+  payBill: { open: boolean; bill: BillView | null };
+  openPayBill: (bill: BillView) => void;
+  closePayBill: () => void;
 };
 
 // State UI nhỏ: hộp thoại nào đang mở. Dữ liệu server nằm trong TanStack Query.
@@ -55,4 +70,12 @@ export const useUi = create<UiState>((set) => ({
   countdown: { open: false, editing: null },
   openCountdown: (editing = null) => set({ countdown: { open: true, editing } }),
   closeCountdown: () => set((s) => ({ countdown: { ...s.countdown, open: false } })),
+
+  bill: { open: false, editing: null },
+  openBill: (editing = null) => set({ bill: { open: true, editing } }),
+  closeBill: () => set((s) => ({ bill: { ...s.bill, open: false } })),
+
+  payBill: { open: false, bill: null },
+  openPayBill: (bill) => set({ payBill: { open: true, bill } }),
+  closePayBill: () => set((s) => ({ payBill: { ...s.payBill, open: false } })),
 }));

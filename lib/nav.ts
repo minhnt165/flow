@@ -21,7 +21,7 @@ export const MODULES: NavItem[] = [
   { href: "/todos", label: t.nav.todos, icon: SquareCheckBig, soon: true },
   { href: "/habits", label: t.nav.habits, icon: Activity, soon: true },
   { href: "/notes", label: t.nav.notes, icon: FileText, soon: true },
-  { href: "/bills", label: t.nav.bills, icon: Zap, soon: true },
+  { href: "/bills", label: t.nav.bills, icon: Zap },
 ];
 
 export const SETTINGS_ITEM: NavItem = { href: "/settings", label: t.nav.settings, icon: Settings };
