@@ -19,6 +19,7 @@ import type {
   FundWithBalance,
   GoalProgress,
   RecurringRule,
+  TodoView,
   Transaction,
 } from "@/lib/supabase/types";
 import {
@@ -235,6 +236,17 @@ class Store {
     return { transaction_id: tx.id, amount: tx.amount, next_run_on: rule.next_run_on };
   }
 
+  /** v_todos: days_left null khi không hạn, âm = quá hạn. */
+  todos(): TodoView[] {
+    const today = this.today();
+    return this.db.todos.map((x) => ({
+      ...x,
+      today,
+      days_left: x.due_on ? daysBetween(today, x.due_on) : null,
+      done: x.done_at !== null,
+    }));
+  }
+
   // Cùng quy tắc với fn_remove_fund: quỹ đã có lịch sử thì lưu trữ, chưa dùng thì xoá hẳn.
   removeFund(id: string) {
     const used =
@@ -274,6 +286,10 @@ class Store {
         return this.db.countdowns;
       case "recurring_rules":
         return this.db.rules;
+      case "v_todos":
+        return this.todos();
+      case "todos":
+        return this.db.todos;
       default:
         return [];
     }
@@ -286,6 +302,7 @@ class Store {
       transactions: this.db.transactions,
       countdowns: this.db.countdowns,
       recurring_rules: this.db.rules,
+      todos: this.db.todos,
       profiles: [this.db.profile],
     };
     return map[name] ?? [];
@@ -476,6 +493,11 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
       }
       if (this.name === "funds") row.opening_balance ??= 0;
       if (this.name === "recurring_rules") row.interval_months ??= 1;
+      if (this.name === "todos") {
+        row.note ??= null;
+        row.due_on ??= null;
+        row.done_at ??= null;
+      }
       this.store.mutable(this.name).push(row);
       rows = [row];
     } else if (this.op === "update") {

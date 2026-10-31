@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarHeart, ChevronRight, PiggyBank, Plus } from "lucide-react";
+import { CalendarHeart, ChevronRight, PiggyBank, Plus, SquareCheckBig } from "lucide-react";
 import Link from "next/link";
 import { IconTile } from "@/components/common/icon-tile";
 import { ProgressBar } from "@/components/common/progress-bar";
@@ -9,10 +9,13 @@ import { CardSkeleton, EmptyState } from "@/components/common/states";
 import { BudgetHighlight } from "@/components/expenses/overview";
 import { TransactionList } from "@/components/expenses/transaction-list";
 import { PageHeader } from "@/components/layout/page";
+import { TodoRow } from "@/components/todos/todo-row";
+import { sortOpen } from "@/components/todos/todos-view";
 import { Button } from "@/components/ui/button";
 import { useCountdowns } from "@/hooks/use-countdowns";
 import { useGoals } from "@/hooks/use-funds";
 import { useProfile } from "@/hooks/use-profile";
+import { useTodos } from "@/hooks/use-todos";
 import { useTransactions } from "@/hooks/use-transactions";
 import { tone } from "@/lib/colors";
 import { APP_TZ, formatLongDate, localDate } from "@/lib/dates";
@@ -126,6 +129,51 @@ function GoalsCard() {
   );
 }
 
+/** Việc quá hạn + hạn hôm nay, tối đa 4 dòng; tick ngay tại trang chủ. */
+function TodayTodos() {
+  const q = useTodos();
+  const openTodo = useUi((s) => s.openTodo);
+  if (q.isLoading) return <CardSkeleton />;
+  const due = (q.data ?? [])
+    .filter((x) => !x.done && x.days_left !== null && x.days_left <= 0)
+    .sort(sortOpen);
+  const shown = due.slice(0, 4);
+  return (
+    <div className="flex flex-col gap-2 card px-6 pt-6 pb-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="m-0 text-[15px] font-semibold">{t.home.todos}</h2>
+        <Link href="/todos" className="text-[13px] font-medium no-underline">
+          {t.home.seeAll}
+        </Link>
+      </div>
+      {shown.length === 0 ? (
+        <EmptyState
+          icon={SquareCheckBig}
+          title={t.home.noTodos}
+          className="py-4"
+          action={
+            <Button variant="secondary" size="sm" onClick={() => openTodo(null)}>
+              <Plus className="size-4" aria-hidden />
+              {t.home.addTodo}
+            </Button>
+          }
+        />
+      ) : (
+        <div className="flex flex-col">
+          {shown.map((todo) => (
+            <TodoRow key={todo.id} todo={todo} compact />
+          ))}
+          {due.length > shown.length && (
+            <Link href="/todos" className="pt-2 text-[12px] font-medium no-underline">
+              {t.home.moreTodos(due.length - shown.length)}
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecentCard() {
   const q = useTransactions({ limit: 5 });
   return (
@@ -165,6 +213,7 @@ export function HomeView() {
       <div className="relative grid grid-cols-1 gap-5 md:grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))]">
         <BudgetHighlight />
         <NextCountdown />
+        <TodayTodos />
         <GoalsCard />
       </div>
       <RecentCard />

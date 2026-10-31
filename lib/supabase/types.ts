@@ -237,3 +237,65 @@ export type MonthSummary = {
   }[];
   by_fund: { fund_id: string; spent: number }[];
 };
+
+/** Việc cần làm. Hạn tuỳ chọn; done_at null = chưa xong. */
+export type Todo = {
+  id: string;
+  user_id: string;
+  title: string;
+  note: string | null;
+  due_on: string | null;
+  done_at: string | null;
+  created_at: string;
+};
+
+export type TodoInput = Pick<Todo, "title" | "note" | "due_on">;
+
+/** Dòng của view v_todos. */
+export type TodoView = Todo & {
+  today: string;
+  /** null = không hạn; âm = quá hạn. */
+  days_left: number | null;
+  done: boolean;
+};
+
+/** Thói quen: mục tiêu số ngày mỗi tuần (1–7), đánh dấu theo ngày trong habit_logs. */
+export type Habit = {
+  id: string;
+  user_id: string;
+  name: string;
+  icon: string;
+  color: PaletteColor;
+  target_per_week: number;
+  sort_order: number;
+  archived_at: string | null;
+  created_at: string;
+};
+
+export type HabitInput = Pick<Habit, "name" | "icon" | "color" | "target_per_week">;
+
+/** Dòng của view v_habits. */
+export type HabitView = Habit & {
+  today: string;
+  done_today: boolean;
+  /** Chuỗi ngày liên tiếp tính tới hôm nay (hoặc hôm qua nếu hôm nay chưa đánh dấu). */
+  streak: number;
+  /** Số ngày đã làm trong tuần này (thứ Hai → Chủ nhật). */
+  week_count: number;
+  total_count: number;
+  /** 7 ngày gần nhất, phần tử cuối là hôm nay. */
+  last7: boolean[];
+};
+
+/** Ghi chú tự do: tiêu đề hoặc nội dung phải có ít nhất một. */
+export type Note = {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  pinned: boolean;
+  updated_at: string;
+  created_at: string;
+};
+
+export type NoteInput = Pick<Note, "title" | "body" | "pinned">;

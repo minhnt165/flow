@@ -6,6 +6,7 @@ import type {
   Fund,
   Profile,
   RecurringRule,
+  Todo,
   Transaction,
 } from "@/lib/supabase/types";
 
@@ -416,7 +417,27 @@ export function buildFixtures() {
     },
   ];
 
-  return { profile, categories, funds, transactions, countdowns, rules };
+  const todo = (title: string, due: string | null, extra: Partial<Todo> = {}): Todo => ({
+    id: id("todo"),
+    user_id: uid,
+    title,
+    note: null,
+    due_on: due,
+    done_at: null,
+    created_at: created,
+    ...extra,
+  });
+  const todos: Todo[] = [
+    todo("Đổi dầu xe", addDays(today, -2), { note: "Garage Minh Phát, 0909 123 456" }),
+    todo("Nộp báo cáo tuần", today),
+    todo("Gọi điện cho mẹ", today),
+    todo("Đặt vé xe về quê Tết", addDays(today, 5)),
+    todo("Khám răng định kỳ", addDays(today, 20)),
+    todo("Đọc xong 'Tiền không mua được gì'", null),
+    todo("Dọn tủ quần áo", null, { done_at: at(addDays(today, -1), "20:15") }),
+  ];
+
+  return { profile, categories, funds, transactions, countdowns, rules, todos };
 }
 
 export type Fixtures = ReturnType<typeof buildFixtures>;

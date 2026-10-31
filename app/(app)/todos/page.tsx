@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/common/coming-soon";
+import { Page } from "@/components/layout/page";
+import { TodosView } from "@/components/todos/todos-view";
 import { t } from "@/messages/vi";
 
-export const metadata: Metadata = { title: t.nav.todos };
+export const metadata: Metadata = { title: t.todos.title };
 
-export default function Page() {
-  return <ComingSoon title={t.nav.todos} />;
+export default function TodosPage() {
+  return (
+    <Page>
+      <TodosView />
+    </Page>
+  );
 }

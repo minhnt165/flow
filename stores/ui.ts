@@ -5,7 +5,10 @@ import type {
   BillView,
   CountdownView,
   Fund,
+  HabitView,
+  Note,
   PaletteColor,
+  TodoView,
   Transaction,
 } from "@/lib/supabase/types";
 
@@ -50,6 +53,18 @@ type UiState = {
   payBill: { open: boolean; bill: BillView | null };
   openPayBill: (bill: BillView) => void;
   closePayBill: () => void;
+
+  todo: { open: boolean; editing: TodoView | null };
+  openTodo: (editing?: TodoView | null) => void;
+  closeTodo: () => void;
+
+  habit: { open: boolean; editing: HabitView | null };
+  openHabit: (editing?: HabitView | null) => void;
+  closeHabit: () => void;
+
+  note: { open: boolean; editing: Note | null };
+  openNote: (editing?: Note | null) => void;
+  closeNote: () => void;
 };
 
 // State UI nhỏ: hộp thoại nào đang mở. Dữ liệu server nằm trong TanStack Query.
@@ -78,4 +93,16 @@ export const useUi = create<UiState>((set) => ({
   payBill: { open: false, bill: null },
   openPayBill: (bill) => set({ payBill: { open: true, bill } }),
   closePayBill: () => set((s) => ({ payBill: { ...s.payBill, open: false } })),
+
+  todo: { open: false, editing: null },
+  openTodo: (editing = null) => set({ todo: { open: true, editing } }),
+  closeTodo: () => set((s) => ({ todo: { ...s.todo, open: false } })),
+
+  habit: { open: false, editing: null },
+  openHabit: (editing = null) => set({ habit: { open: true, editing } }),
+  closeHabit: () => set((s) => ({ habit: { ...s.habit, open: false } })),
+
+  note: { open: false, editing: null },
+  openNote: (editing = null) => set({ note: { open: true, editing } }),
+  closeNote: () => set((s) => ({ note: { ...s.note, open: false } })),
 }));
