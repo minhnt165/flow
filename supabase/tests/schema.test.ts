@@ -79,6 +79,43 @@ describe("giao dịch và số dư quỹ", () => {
     expect(await total()).toBe(before);
   });
 
+  it("opening_balance cộng vào số dư và tiến độ mục tiêu, không phải là giao dịch", async () => {
+    const { q, cat } = await ids(uid);
+    const [{ id: cash }] = await q<{ id: string }>(
+      "insert into funds (name, kind, opening_balance) values ('Ví tiền mặt', 'free', 2000000) returning id",
+    );
+    const bal = async () =>
+      num(
+        (
+          await q<{ balance: string }>("select balance from v_fund_balances where id = $1", [cash])
+        )[0].balance,
+      );
+    expect(await bal()).toBe(2000000);
+    await q(
+      "insert into transactions (type, amount, fund_id, category_id) values ('expense', 500000, $1, $2)",
+      [cash, cat("Ăn uống")],
+    );
+    expect(await bal()).toBe(1500000);
+    const [n] = await q<{ n: number }>(
+      "select count(*)::int as n from transactions where fund_id = $1",
+      [cash],
+    );
+    expect(n.n).toBe(1);
+
+    const [{ id: goal }] = await q<{ id: string }>(
+      "insert into funds (name, kind, target_amount, opening_balance) values ('Đã có sẵn', 'goal', 10000000, 4000000) returning id",
+    );
+    const [p] = await q<{ contributed: string; pct: string }>(
+      "select contributed, pct from v_fund_goal_progress where fund_id = $1",
+      [goal],
+    );
+    expect([num(p.contributed), num(p.pct)]).toEqual([4000000, 40]);
+
+    await expect(
+      q("insert into funds (name, kind, opening_balance) values ('Âm', 'free', -1)"),
+    ).rejects.toThrow(/opening_balance/);
+  });
+
   it("ràng buộc: chuyển quỹ cần quỹ đến; chi/thu cần danh mục đúng loại", async () => {
     const { q, defaultFund, cat } = await ids(uid);
     await expect(

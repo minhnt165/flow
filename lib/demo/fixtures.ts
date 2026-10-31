@@ -141,6 +141,7 @@ export function buildFixtures() {
     countdown_id: null,
     auto_contribution: null,
     auto_from_fund_id: null,
+    opening_balance: 0,
     is_default: false,
     sort_order: 0,
     archived_at: null,

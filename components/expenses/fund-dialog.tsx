@@ -38,6 +38,7 @@ type FormState = {
   useCountdown: boolean;
   auto: boolean;
   autoAmount: number;
+  opening: number;
 };
 
 function initial(f: Fund | null, preset: FundPreset | null): FormState {
@@ -53,6 +54,7 @@ function initial(f: Fund | null, preset: FundPreset | null): FormState {
     useCountdown: Boolean((f?.countdown_id && !f?.target_date) || preset?.countdownId),
     auto: Boolean(f?.auto_contribution),
     autoAmount: f?.auto_contribution ?? 0,
+    opening: f?.opening_balance ?? 0,
   };
 }
 
@@ -88,9 +90,12 @@ function FundForm() {
   const deadline = s.useCountdown ? (linkedCountdown?.next_occurrence ?? null) : s.deadline || null;
   const sourceFund = ctx.defaultFund?.id === editing?.id ? undefined : ctx.defaultFund;
 
+  // Số dư từ view đã gồm opening_balance cũ; thay bằng giá trị đang nhập để xem trước.
+  const liveBalance = balance - (editing?.opening_balance ?? 0) + s.opening;
+
   const plan = planGoal({
     target: s.target,
-    contributed: balance,
+    contributed: liveBalance,
     deadline,
     today,
     salaryDay: ctx.salaryDay,
@@ -119,6 +124,7 @@ function FundForm() {
         goal && s.useCountdown ? s.countdownId : goal ? (editing?.countdown_id ?? null) : null,
       auto_contribution: auto ? s.autoAmount : null,
       auto_from_fund_id: auto ? sourceFund.id : null,
+      opening_balance: s.opening,
     };
     setError(undefined);
     try {
@@ -148,7 +154,7 @@ function FundForm() {
       ? formatVND(plan.effectiveContribution)
       : s.kind === "monthly_budget"
         ? formatVND(s.monthlyBudget)
-        : formatVND(balance);
+        : formatVND(liveBalance);
 
   return (
     <form
@@ -194,6 +200,14 @@ function FundForm() {
               iconLabel={t.fundDialog.icon}
               colorLabel={t.fundDialog.color}
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="f-opening" className="label-caps">
+              {editing ? t.fundDialog.openingEdit : t.fundDialog.opening}
+            </label>
+            <AmountInput id="f-opening" value={s.opening} onChange={(v) => set({ opening: v })} />
+            <span className="text-xs text-muted-foreground">{t.fundDialog.openingHint}</span>
           </div>
 
           <fieldset className="m-0 flex flex-col gap-2.5 border-0 p-0">

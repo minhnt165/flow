@@ -51,6 +51,8 @@ export type Fund = {
   countdown_id: string | null;
   auto_contribution: number | null;
   auto_from_fund_id: string | null;
+  /** Số dư lúc tạo quỹ, cộng vào balance; không phải giao dịch. */
+  opening_balance: number;
   is_default: boolean;
   sort_order: number;
   archived_at: string | null;
@@ -72,6 +74,7 @@ export type FundInput = Pick<
   | "countdown_id"
   | "auto_contribution"
   | "auto_from_fund_id"
+  | "opening_balance"
 >;
 
 /** Dòng của view v_fund_month / function fn_budget_month. */

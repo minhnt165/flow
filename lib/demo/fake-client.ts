@@ -26,7 +26,7 @@ class Store {
 
   balances(): FundWithBalance[] {
     return this.db.funds.map((f) => {
-      let balance = 0;
+      let balance = f.opening_balance;
       for (const t of this.db.transactions) {
         if (t.type === "income" && t.fund_id === f.id) balance += t.amount;
         else if (t.type === "expense" && t.fund_id === f.id) balance -= t.amount;
@@ -376,6 +376,7 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
       };
       if (this.name === "transactions") row.recurring_rule_id ??= null;
       if (this.name === "countdowns") row.fund_id ??= null;
+      if (this.name === "funds") row.opening_balance ??= 0;
       this.store.mutable(this.name).push(row);
       rows = [row];
     } else if (this.op === "update") {
