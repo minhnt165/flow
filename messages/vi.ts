@@ -306,6 +306,7 @@ export const vi = {
       name: "Nhập tên quỹ.",
       target: "Nhập số tiền mục tiêu.",
       deadlinePast: "Hạn phải sau hôm nay.",
+      deadlineInvalid: "Ngày hạn không hợp lệ, kiểm tra lại năm.",
       save: "Không lưu được quỹ. Thử lại nhé.",
     },
   },

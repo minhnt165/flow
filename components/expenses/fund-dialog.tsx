@@ -108,8 +108,11 @@ function FundForm() {
   const submit = async () => {
     if (!s.name.trim()) return setError(t.fundDialog.errors.name);
     if (s.kind === "goal" && s.target <= 0) return setError(t.fundDialog.errors.target);
-    if (s.kind === "goal" && !s.useCountdown && s.deadline && s.deadline <= today) {
-      return setError(t.fundDialog.errors.deadlinePast);
+    if (s.kind === "goal" && !s.useCountdown && s.deadline) {
+      // Ô date trên desktop cho gõ năm tới 6 chữ số; so chuỗi thì "202706-…" vẫn lớn hơn hôm nay.
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s.deadline))
+        return setError(t.fundDialog.errors.deadlineInvalid);
+      if (s.deadline <= today) return setError(t.fundDialog.errors.deadlinePast);
     }
     const goal = s.kind === "goal";
     const auto = goal && s.auto && s.autoAmount > 0 && sourceFund;
@@ -308,6 +311,7 @@ function FundForm() {
                       id="f-deadline"
                       type="date"
                       min={today}
+                      max="9999-12-31"
                       value={s.deadline}
                       onChange={(e) => set({ deadline: e.target.value })}
                       className={cn(inputCls, "md:text-sm")}
