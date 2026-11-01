@@ -510,7 +510,7 @@ describe("Telegram", () => {
     const { q, defaultFund, cat } = await ids(uid);
     await q("update funds set monthly_budget = 1000000 where id = $1", [defaultFund]);
     await q(
-      "insert into transactions (type, amount, fund_id, category_id) values ('expense', 850000, $1, $2)",
+      "insert into transactions (type, amount, fund_id, category_id, occurred_at) values ('expense', 850000, $1, $2, '2026-10-30T09:00:00+07:00')",
       [defaultFund, cat("Ăn uống")],
     );
     const [{ r }] = await q<{ r: { code: string } }>("select create_telegram_link_code() as r");
