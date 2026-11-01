@@ -786,6 +786,7 @@ export const vi = {
     errorTitle: "Không tải được dữ liệu",
     errorBody: "Kiểm tra kết nối mạng rồi thử lại.",
     notFound: "Không tìm thấy trang này.",
+    version: (v: string) => `Flow ${v}`,
     today: "Hôm nay",
     yesterday: "Hôm qua",
     all: "Tất cả",

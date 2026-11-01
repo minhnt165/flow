@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { logout } from "@/app/auth/actions";
+import { AppVersion } from "@/components/common/app-version";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { MODULES, SETTINGS_ITEM } from "@/lib/nav";
@@ -38,6 +39,7 @@ export default function MorePage() {
           {t.nav.signOut}
         </Button>
       </form>
+      <AppVersion />
     </Page>
   );
 }

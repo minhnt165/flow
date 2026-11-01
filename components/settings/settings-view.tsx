@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { AppVersion } from "@/components/common/app-version";
 import { PageHeader } from "@/components/layout/page";
 import { AccountTab } from "@/components/settings/account-tab";
 import { DataTab } from "@/components/settings/data-tab";
@@ -48,6 +49,7 @@ export function SettingsView({ email }: { email: string }) {
       {tab === "notifications" && <NotificationsTab />}
       {tab === "wallets" && <WalletsTab />}
       {tab === "data" && <DataTab />}
+      <AppVersion />
     </>
   );
 }
