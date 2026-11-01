@@ -31,12 +31,10 @@ Deno.serve(async (req) => {
     console.error("fn_evening_summaries", summaries.error.message);
     return json({ error: summaries.error.message }, 500);
   }
-  if (reminders.error) {
-    console.error("fn_expense_reminders", reminders.error.message);
-    return json({ error: reminders.error.message }, 500);
-  }
+  // Lời nhắc lỗi (vd. chưa chạy migration expense_reminder) không được chặn tổng kết tối.
+  if (reminders.error) console.error("fn_expense_reminders", reminders.error.message);
 
-  const stats = { sent: 0, skipped: 0, failed: 0 };
+  const stats = { sent: 0, skipped: 0, failed: reminders.error ? 1 : 0 };
   for (const row of (summaries.data ?? []) as Row[]) {
     const p = row.payload;
     const result = await sendOnce({
