@@ -19,6 +19,7 @@ export type Profile = {
   notify_countdowns: boolean;
   notify_budget: boolean;
   daily_summary_at: string | null;
+  expense_reminder_at: string | null;
   telegram_log_expense: boolean;
   timezone: string;
   created_at: string;
@@ -33,6 +34,7 @@ export type ProfileUpdate = Partial<
     | "notify_countdowns"
     | "notify_budget"
     | "daily_summary_at"
+    | "expense_reminder_at"
     | "telegram_log_expense"
     | "timezone"
   >

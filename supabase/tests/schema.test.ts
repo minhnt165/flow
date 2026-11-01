@@ -556,6 +556,45 @@ describe("Telegram", () => {
     expect(num(row.payload.avg7)).toBe(100000);
     await setNow(db, "2026-10-30T10:00:00+07:00");
   });
+
+  it("fn_expense_reminders: mặc định 20:00, kèm số khoản chi hôm nay; tắt hoặc đã gửi thì không trả", async () => {
+    const uid = await createUser(db, "reminder@example.com");
+    const { q, defaultFund, cat } = await ids(uid);
+    const [{ r }] = await q<{ r: { code: string } }>("select create_telegram_link_code() as r");
+    const svc = asService(db);
+    await svc("select link_telegram($1, 434343, null)", [r.code]);
+    await q(
+      `insert into transactions (type, amount, fund_id, category_id, occurred_at) values
+        ('expense', 65000, $1, $2, '2026-10-30T12:00:00+07:00'),
+        ('expense', 120000, $1, $2, '2026-10-30T18:00:00+07:00'),
+        ('expense', 700000, $1, $2, '2026-10-29T12:00:00+07:00')`,
+      [defaultFund, cat("Ăn uống")],
+    );
+    const at = (iso: string) =>
+      svc<{ today: string; payload: { count: number; total: number; can_log: boolean } }>(
+        "select * from fn_expense_reminders($1) where user_id = $2",
+        [iso, uid],
+      );
+
+    expect(await at("2026-10-30T19:50:00+07:00")).toEqual([]);
+    const [row] = await at("2026-10-30T20:05:00+07:00");
+    expect(num(row.payload.count)).toBe(2);
+    expect(num(row.payload.total)).toBe(185000);
+    expect(row.payload.can_log).toBe(true);
+    expect(await at("2026-10-30T20:20:00+07:00")).toEqual([]);
+
+    await svc(
+      "insert into notification_log (user_id, kind, ref_id, sent_on) values ($1, 'expense_reminder', null, '2026-10-30')",
+      [uid],
+    );
+    expect(await at("2026-10-30T20:05:00+07:00")).toEqual([]);
+
+    await q("update profiles set expense_reminder_at = '12:00'");
+    expect(num((await at("2026-10-31T12:00:00+07:00"))[0].payload.count)).toBe(0);
+    await q("update profiles set expense_reminder_at = null");
+    expect(await at("2026-10-31T12:00:00+07:00")).toEqual([]);
+    await setNow(db, "2026-10-30T10:00:00+07:00");
+  });
 });
 
 describe("hoá đơn định kỳ (v_bills, fn_pay_bill)", () => {

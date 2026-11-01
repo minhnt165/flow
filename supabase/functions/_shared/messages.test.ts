@@ -68,4 +68,14 @@ describe("tin nhắn Telegram", () => {
       "chưa ghi khoản chi nào",
     );
   });
+
+  it("nhắc ghi chi tiêu: số khoản đã ghi hôm nay, chỉ gợi ý cú pháp khi ghi được qua Telegram", () => {
+    expect(msg.expenseReminder({ count: 2, total: 185_000, can_log: true })).toBe(
+      "Hôm nay bạn đã ghi <b>2 khoản</b> · <b>185.000 ₫</b>. Còn khoản nào chưa ghi không?\n" +
+        "Nhắn số tiền kèm ghi chú để ghi ngay, ví dụ <b>65k cơm trưa</b>.",
+    );
+    const off = msg.expenseReminder({ count: 0, total: 0, can_log: false });
+    expect(off).toContain("chưa ghi khoản chi nào");
+    expect(off).not.toContain("65k");
+  });
 });

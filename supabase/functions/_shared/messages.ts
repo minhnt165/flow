@@ -127,6 +127,16 @@ export const msg = {
     return lines.join("\n");
   },
 
+  expenseReminder: (p: { count: number; total: number; can_log: boolean }) =>
+    [
+      p.count === 0
+        ? "Hôm nay bạn chưa ghi khoản chi nào."
+        : `Hôm nay bạn đã ghi ${b(`${p.count} khoản`)} · ${b(formatVND(p.total))}. Còn khoản nào chưa ghi không?`,
+      p.can_log
+        ? `Nhắn số tiền kèm ghi chú để ghi ngay, ví dụ ${b("65k cơm trưa")}.`
+        : `Mở ${APP_NAME} để ghi lại trước khi quên nhé.`,
+    ].join("\n"),
+
   test: (name: string) =>
     `Tin thử từ ${APP_NAME}. Xin chào ${escapeHtml(name)}, bot sẽ nhắc bạn qua đây.`,
 };

@@ -18,6 +18,7 @@ import { msg } from "@/supabase/functions/_shared/messages.ts";
 
 const BOT = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "";
 const EVENING_TIMES = ["19:00", "20:00", "21:00", "22:00", "23:00"];
+const REMINDER_TIMES = ["12:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"];
 
 /** Hiển thị HTML của bot (chỉ có <b>) mà không dùng innerHTML. */
 function TgText({ html }: { html: string }) {
@@ -262,12 +263,41 @@ function ToggleRow({
   );
 }
 
+function TimeSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <select
+      aria-label={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="min-h-10 cursor-pointer rounded-[10px] border border-border bg-bg px-2.5 text-base text-text outline-none md:min-h-9 md:text-[13px]"
+    >
+      {options.map((x) => (
+        <option key={x} value={x}>
+          {x}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function RemindList({ profile }: { profile: Profile }) {
   const update = useUpdateProfile();
   const save = (patch: ProfileUpdate) =>
     update.mutate({ id: profile.id, patch }, { onError: () => toast.error(t.settings.saveError) });
   const evening = profile.daily_summary_at?.slice(0, 5) ?? null;
   const [time, setTime] = useState(evening ?? "21:00");
+  const reminder = profile.expense_reminder_at?.slice(0, 5) ?? null;
+  const [reminderTime, setReminderTime] = useState(reminder ?? "20:00");
   const r = t.settings.remind;
 
   return (
@@ -304,21 +334,33 @@ function RemindList({ profile }: { profile: Profile }) {
         checked={evening !== null}
         onChange={(v) => save({ daily_summary_at: v ? `${time}:00` : null })}
         extra={
-          <select
-            aria-label={r.eveningTime}
+          <TimeSelect
+            label={r.eveningTime}
             value={time}
-            onChange={(e) => {
-              setTime(e.target.value);
-              if (evening !== null) save({ daily_summary_at: `${e.target.value}:00` });
+            options={EVENING_TIMES}
+            onChange={(v) => {
+              setTime(v);
+              if (evening !== null) save({ daily_summary_at: `${v}:00` });
             }}
-            className="min-h-10 cursor-pointer rounded-[10px] border border-border bg-bg px-2.5 text-base text-text outline-none md:min-h-9 md:text-[13px]"
-          >
-            {EVENING_TIMES.map((x) => (
-              <option key={x} value={x}>
-                {x}
-              </option>
-            ))}
-          </select>
+          />
+        }
+      />
+      <ToggleRow
+        id="n-reminder"
+        label={r.reminder}
+        hint={r.reminderHint}
+        checked={reminder !== null}
+        onChange={(v) => save({ expense_reminder_at: v ? `${reminderTime}:00` : null })}
+        extra={
+          <TimeSelect
+            label={r.reminderTime}
+            value={reminderTime}
+            options={REMINDER_TIMES}
+            onChange={(v) => {
+              setReminderTime(v);
+              if (reminder !== null) save({ expense_reminder_at: `${v}:00` });
+            }}
+          />
         }
       />
       <div className="[&>div]:pb-[18px]">
@@ -420,6 +462,9 @@ function MessagePreview() {
         </Bubble>
         <Bubble from="bot" time="08:00">
           <TgText html={msg.countdown("Sinh nhật mẹ", addDays(today, 16), 16)} />
+        </Bubble>
+        <Bubble from="bot" time="20:00">
+          <TgText html={msg.expenseReminder({ count: 2, total: 185_000, can_log: true })} />
         </Bubble>
       </div>
     </aside>

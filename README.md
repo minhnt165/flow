@@ -111,6 +111,7 @@ curl.exe "https://api.telegram.org/bot<TOKEN>/getWebhookInfo"
 | `run-recurring`  | `0 23 * * *`   | 06:00           | Tự động góp sau lương / chuyển định kỳ, báo Telegram         |
 | `notify-daily`   | `0 1 * * *`    | 08:00           | Countdown, hoá đơn, ngân sách 80% / 100%, quỹ mục tiêu chậm  |
 | `notify-evening` | `*/15 * * * *` | theo người dùng | Tổng kết chi hôm nay lúc `daily_summary_at` (mặc định 21:00) |
+|                  |                |                 | Nhắc ghi chi tiêu lúc `expense_reminder_at` (mặc định 20:00) |
 
 ### Web (Vercel)
 

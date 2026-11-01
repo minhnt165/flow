@@ -35,6 +35,7 @@ export function buildFixtures() {
     notify_countdowns: true,
     notify_budget: true,
     daily_summary_at: "21:00:00",
+    expense_reminder_at: "20:00:00",
     telegram_log_expense: true,
     timezone: APP_TZ,
     created_at: created,
