@@ -7,7 +7,7 @@ import { DEMO_USER } from "@/lib/demo/fixtures";
 import { DEMO_MODE } from "@/lib/demo/mode";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { ensureProfile, getProfile } from "@/lib/supabase/profiles";
+import { accountName, ensureProfile, getProfile } from "@/lib/supabase/profiles";
 import { getServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ async function loadAccount() {
   // Lần đầu đăng nhập: hỏi ngày nhận lương trước khi vào app.
   if (profile && profile.salary_day === null) redirect("/onboarding");
   const email = user.email ?? "";
-  return { id: user.id, name: profile?.display_name || email.split("@")[0] || "Bạn", email };
+  return { id: user.id, name: accountName(profile?.display_name, email), email };
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

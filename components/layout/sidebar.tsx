@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/brand/logo";
 import { AccountBox } from "@/components/layout/account-box";
+import { useProfile } from "@/hooks/use-profile";
 import { isActive, MODULES, SETTINGS_ITEM, type NavItem } from "@/lib/nav";
+import { accountName } from "@/lib/supabase/profiles";
 import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
 
@@ -31,6 +33,9 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
 
 export function Sidebar({ name, email }: { name: string; email: string }) {
   const pathname = usePathname();
+  // Tên từ server chỉ dùng tới khi query hồ sơ tải xong; sửa tên ở Cài đặt cập nhật query này ngay.
+  const profile = useProfile();
+  const shownName = profile.data ? accountName(profile.data.display_name, email) : name;
   return (
     <nav
       aria-label={t.nav.label}
@@ -46,7 +51,7 @@ export function Sidebar({ name, email }: { name: string; email: string }) {
       </div>
       <div className="mt-auto flex flex-col gap-2">
         <NavLink item={SETTINGS_ITEM} pathname={pathname} />
-        <AccountBox name={name} email={email} />
+        <AccountBox name={shownName} email={email} />
       </div>
     </nav>
   );
