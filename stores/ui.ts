@@ -7,6 +7,7 @@ import type {
   Fund,
   HabitView,
   Note,
+  ObjectiveView,
   PaletteColor,
   TodoView,
   Transaction,
@@ -65,6 +66,10 @@ type UiState = {
   note: { open: boolean; editing: Note | null };
   openNote: (editing?: Note | null) => void;
   closeNote: () => void;
+
+  objective: { open: boolean; editing: ObjectiveView | null };
+  openObjective: (editing?: ObjectiveView | null) => void;
+  closeObjective: () => void;
 };
 
 // State UI nhỏ: hộp thoại nào đang mở. Dữ liệu server nằm trong TanStack Query.
@@ -105,4 +110,8 @@ export const useUi = create<UiState>((set) => ({
   note: { open: false, editing: null },
   openNote: (editing = null) => set({ note: { open: true, editing } }),
   closeNote: () => set((s) => ({ note: { ...s.note, open: false } })),
+
+  objective: { open: false, editing: null },
+  openObjective: (editing = null) => set({ objective: { open: true, editing } }),
+  closeObjective: () => set((s) => ({ objective: { ...s.objective, open: false } })),
 }));

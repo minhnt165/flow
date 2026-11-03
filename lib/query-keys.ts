@@ -19,6 +19,10 @@ export const qk = {
   todos: ["todos"] as const,
   habits: ["habits"] as const,
   notes: ["notes"] as const,
+  objectives: ["objectives"] as const,
+  objective: (id: string) => ["objectives", id] as const,
+  objectiveOutputs: (id: string) => ["objectives", id, "outputs"] as const,
+  objectiveSessions: (id: string) => ["objectives", id, "sessions"] as const,
 };
 
 /** Những truy vấn phụ thuộc vào giao dịch: làm mới sau mỗi lần thêm/sửa/xoá. */

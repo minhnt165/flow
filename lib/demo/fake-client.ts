@@ -19,6 +19,7 @@ import type {
   FundWithBalance,
   GoalProgress,
   HabitView,
+  ObjectiveView,
   RecurringRule,
   TodoView,
   Transaction,
@@ -28,6 +29,7 @@ import {
   payPeriods,
   perPeriodNeeded,
 } from "@/supabase/functions/_shared/goal.ts";
+import { mondayOf } from "@/lib/objectives";
 import { buildFixtures, DEMO_USER, type Fixtures } from "./fixtures";
 
 type Row = Record<string, unknown>;
@@ -287,6 +289,41 @@ class Store {
     return true;
   }
 
+  /** v_objectives: buổi tuần này (T2 → hôm nay), tổng buổi, đếm kết quả đầu ra. */
+  objectives(): ObjectiveView[] {
+    const today = this.today();
+    const monday = mondayOf(today);
+    return this.db.objectives.map((o) => {
+      const days = this.db.objectiveSessions
+        .filter((s) => s.objective_id === o.id)
+        .map((s) => s.day);
+      const outputs = this.db.objectiveOutputs.filter((p) => p.objective_id === o.id);
+      return {
+        ...o,
+        today,
+        done_today: days.includes(today),
+        week_count: days.filter((d) => d >= monday && d <= today).length,
+        total_sessions: days.length,
+        outputs_total: outputs.length,
+        outputs_done: outputs.filter((p) => p.done_at).length,
+        outputs_overdue: outputs.filter((p) => !p.done_at && p.due_on && p.due_on < today).length,
+      };
+    });
+  }
+
+  toggleObjectiveSession(id: string, day: string | null) {
+    if (!this.db.objectives.some((o) => o.id === id)) throw new Error("objective_not_found");
+    const d = day ?? this.today();
+    const list = this.db.objectiveSessions;
+    const i = list.findIndex((s) => s.objective_id === id && s.day === d);
+    if (i >= 0) {
+      list.splice(i, 1);
+      return false;
+    }
+    list.push({ objective_id: id, day: d });
+    return true;
+  }
+
   // Cùng quy tắc với fn_remove_fund: quỹ đã có lịch sử thì lưu trữ, chưa dùng thì xoá hẳn.
   removeFund(id: string) {
     const used =
@@ -336,6 +373,14 @@ class Store {
         return this.db.habits;
       case "notes":
         return this.db.notes;
+      case "v_objectives":
+        return this.objectives();
+      case "objectives":
+        return this.db.objectives;
+      case "objective_outputs":
+        return this.db.objectiveOutputs;
+      case "objective_sessions":
+        return this.db.objectiveSessions;
       default:
         return [];
     }
@@ -351,6 +396,8 @@ class Store {
       todos: this.db.todos,
       habits: this.db.habits,
       notes: this.db.notes,
+      objectives: this.db.objectives,
+      objective_outputs: this.db.objectiveOutputs,
       profiles: [this.db.profile],
     };
     return map[name] ?? [];
@@ -440,6 +487,11 @@ class Store {
         );
       case "fn_toggle_habit":
         return this.toggleHabit(String(args.p_habit_id), (args.p_day as string | null) ?? null);
+      case "fn_toggle_objective_session":
+        return this.toggleObjectiveSession(
+          String(args.p_objective_id),
+          (args.p_day as string | null) ?? null,
+        );
       case "fn_remove_fund":
         return this.removeFund(String(args.p_fund_id));
       case "fn_set_default_fund":
@@ -466,7 +518,7 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
   private rng?: [number, number];
   private mode: "many" | "single" | "maybe" = "many";
   private op: "select" | "insert" | "update" | "delete" = "select";
-  private payload?: Row;
+  private payload?: Row | Row[];
 
   constructor(
     private store: Store,
@@ -530,7 +582,7 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
     this.mode = "maybe";
     return this;
   }
-  insert(obj: Row) {
+  insert(obj: Row | Row[]) {
     this.op = "insert";
     this.payload = obj;
     return this;
@@ -547,7 +599,19 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
 
   private exec() {
     let rows: Row[];
-    if (this.op === "insert") {
+    if (this.op === "insert" && Array.isArray(this.payload)) {
+      // Chèn nhiều dòng một lượt (hiện chỉ dùng cho kết quả đầu ra của mục tiêu).
+      rows = this.payload.map((p) => ({
+        id: crypto.randomUUID(),
+        user_id: DEMO_USER.id,
+        created_at: new Date().toISOString(),
+        due_on: null,
+        done_at: null,
+        sort_order: 0,
+        ...p,
+      }));
+      this.store.mutable(this.name).push(...rows);
+    } else if (this.op === "insert") {
       const row: Row = {
         id: crypto.randomUUID(),
         user_id: DEMO_USER.id,
@@ -575,6 +639,15 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
         row.due_on ??= null;
         row.done_at ??= null;
       }
+      if (this.name === "objectives") {
+        row.why ??= null;
+        row.icon ??= "target";
+        row.color ??= "violet";
+        row.end_on ??= null;
+        row.sessions_per_week ??= null;
+        row.completed_at ??= null;
+        row.sort_order ??= 0;
+      }
       this.store.mutable(this.name).push(row);
       rows = [row];
     } else if (this.op === "update") {
@@ -589,6 +662,12 @@ class Query implements PromiseLike<{ data: unknown; error: null }> {
       if (this.name === "habits") {
         const ids = new Set(rows.map((r) => r.id));
         this.store.db.habitLogs = this.store.db.habitLogs.filter((l) => !ids.has(l.habit_id));
+      }
+      if (this.name === "objectives") {
+        const ids = new Set(rows.map((r) => r.id));
+        const db = this.store.db;
+        db.objectiveOutputs = db.objectiveOutputs.filter((p) => !ids.has(p.objective_id));
+        db.objectiveSessions = db.objectiveSessions.filter((s) => !ids.has(s.objective_id));
       }
     } else {
       rows = this.store.table(this.name).filter((r) => this.filters.every((f) => f(r)));

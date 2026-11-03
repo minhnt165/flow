@@ -6,6 +6,8 @@ import type {
   Fund,
   Habit,
   Note,
+  Objective,
+  ObjectiveOutput,
   Profile,
   RecurringRule,
   Todo,
@@ -519,6 +521,63 @@ export function buildFixtures() {
     ),
   ];
 
+  const objective = (
+    title: string,
+    icon: string,
+    color: Objective["color"],
+    startAgo: number,
+    endIn: number | null,
+    per: number | null,
+    why: string | null,
+  ): Objective => ({
+    id: id("objective"),
+    user_id: uid,
+    title,
+    why,
+    icon,
+    color,
+    start_on: addDays(today, -startAgo),
+    end_on: endIn === null ? null : addDays(today, endIn),
+    sessions_per_week: per,
+    completed_at: null,
+    sort_order: 0,
+    created_at: at(addDays(today, -Math.max(startAgo, 0)), "08:00"),
+  });
+  const objectives: Objective[] = [
+    objective("Học Java", "laptop", "violet", 15, 54, 3, "Chuyển sang làm backend trong năm sau."),
+    objective("IELTS 6.5", "languages", "sky", 40, 140, 4, null),
+    objective("Chạy được 10km", "footprints", "green", -5, null, 3, null),
+  ];
+  // Buổi đã làm: (chỉ số mục tiêu, số ngày trước hôm nay)
+  const objectiveSessions: { objective_id: string; day: string }[] = [];
+  const session = (i: number, daysAgo: number[]) =>
+    daysAgo.forEach((n) =>
+      objectiveSessions.push({ objective_id: objectives[i].id, day: addDays(today, -n) }),
+    );
+  session(0, [1, 3, 5, 8, 10, 12, 14]);
+  session(1, [2, 4, 6, 9, 13, 20, 22, 27, 30, 35]);
+  const output = (i: number, title: string, dueIn: number | null, doneAgo: number | null) => {
+    const o: ObjectiveOutput = {
+      id: id("output"),
+      user_id: uid,
+      objective_id: objectives[i].id,
+      title,
+      due_on: dueIn === null ? null : addDays(today, dueIn),
+      done_at: doneAgo === null ? null : at(addDays(today, -doneAgo), "21:00"),
+      sort_order: 0,
+      created_at: objectives[i].created_at,
+    };
+    return o;
+  };
+  const objectiveOutputs: ObjectiveOutput[] = [
+    output(0, "Cài JDK + IntelliJ, viết Hello World", -12, 13),
+    output(0, "Xong phần OOP cơ bản", -2, 3),
+    output(0, "Project CRUD với Spring Boot", 30, null),
+    output(0, "Deploy project lên server", 54, null),
+    output(1, "Thi thử đạt 5.5", -5, null),
+    output(1, "Thi thử đạt 6.5", 120, null),
+  ];
+
   return {
     profile,
     categories,
@@ -530,6 +589,9 @@ export function buildFixtures() {
     habits,
     habitLogs,
     notes,
+    objectives,
+    objectiveOutputs,
+    objectiveSessions,
   };
 }
 

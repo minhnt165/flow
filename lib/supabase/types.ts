@@ -304,3 +304,54 @@ export type Note = {
 };
 
 export type NoteInput = Pick<Note, "title" | "body" | "pinned">;
+
+/** Mục tiêu không gắn tiền: thời gian bắt đầu, hạn tuỳ chọn, số buổi mỗi tuần, kết quả đầu ra. */
+export type Objective = {
+  id: string;
+  user_id: string;
+  title: string;
+  why: string | null;
+  icon: string;
+  color: PaletteColor;
+  start_on: string;
+  end_on: string | null;
+  /** null = không đặt nhịp. */
+  sessions_per_week: number | null;
+  completed_at: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+export type ObjectiveInput = Pick<
+  Objective,
+  "title" | "why" | "icon" | "color" | "start_on" | "end_on" | "sessions_per_week"
+>;
+
+/** Dòng của view v_objectives. */
+export type ObjectiveView = Objective & {
+  today: string;
+  done_today: boolean;
+  /** Số buổi đã làm trong tuần này (thứ Hai → hôm nay). */
+  week_count: number;
+  total_sessions: number;
+  outputs_total: number;
+  outputs_done: number;
+  /** Chưa xong và hạn trước hôm nay. */
+  outputs_overdue: number;
+};
+
+/** Kết quả đầu ra của một mục tiêu; done_at null = chưa xong. */
+export type ObjectiveOutput = {
+  id: string;
+  user_id: string;
+  objective_id: string;
+  title: string;
+  due_on: string | null;
+  done_at: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+export type ObjectiveOutputInput = Pick<ObjectiveOutput, "objective_id" | "title" | "due_on"> & {
+  sort_order?: number;
+};

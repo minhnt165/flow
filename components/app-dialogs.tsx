@@ -8,6 +8,7 @@ import { FundDialog } from "@/components/expenses/fund-dialog";
 import { TransactionDialog } from "@/components/expenses/transaction-dialog";
 import { HabitDialog } from "@/components/habits/habit-dialog";
 import { NoteDialog } from "@/components/notes/note-dialog";
+import { ObjectiveDialog } from "@/components/objectives/objective-dialog";
 import { TodoDialog } from "@/components/todos/todo-dialog";
 import { useUi } from "@/stores/ui";
 
@@ -32,7 +33,8 @@ export function AppDialogs() {
         s.payBill.open ||
         s.todo.open ||
         s.habit.open ||
-        s.note.open
+        s.note.open ||
+        s.objective.open
       )
         return;
       e.preventDefault();
@@ -60,6 +62,7 @@ export function AppDialogs() {
       <TodoDialog />
       <HabitDialog />
       <NoteDialog />
+      <ObjectiveDialog />
     </>
   );
 }

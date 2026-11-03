@@ -7,6 +7,7 @@ import {
   PiggyBank,
   Plus,
   SquareCheckBig,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { IconTile } from "@/components/common/icon-tile";
@@ -17,12 +18,14 @@ import { BudgetHighlight } from "@/components/expenses/overview";
 import { TransactionList } from "@/components/expenses/transaction-list";
 import { HabitRow } from "@/components/habits/habit-row";
 import { PageHeader } from "@/components/layout/page";
+import { ObjectiveRow } from "@/components/objectives/objective-row";
 import { TodoRow } from "@/components/todos/todo-row";
 import { sortOpen } from "@/components/todos/todos-view";
 import { Button } from "@/components/ui/button";
 import { useCountdowns } from "@/hooks/use-countdowns";
 import { useFunds, useGoals } from "@/hooks/use-funds";
 import { useHabits } from "@/hooks/use-habits";
+import { useObjectives } from "@/hooks/use-objectives";
 import { useProfile } from "@/hooks/use-profile";
 import { useTodos } from "@/hooks/use-todos";
 import { useTransactions } from "@/hooks/use-transactions";
@@ -264,6 +267,43 @@ function HabitsCard() {
   );
 }
 
+/** Mục tiêu đang thực hiện: % hoàn thành, nhịp tuần này; tick buổi hôm nay ngay tại trang chủ. */
+function ObjectivesCard() {
+  const q = useObjectives();
+  const openObjective = useUi((s) => s.openObjective);
+  if (q.isLoading) return <CardSkeleton />;
+  const active = (q.data ?? []).filter((o) => !o.completed_at && o.start_on <= o.today);
+  return (
+    <div className="flex flex-col gap-2 card px-6 pt-6 pb-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="m-0 text-[15px] font-semibold">{t.home.objectives}</h2>
+        <Link href="/objectives" className="text-[13px] font-medium no-underline">
+          {t.home.seeAll}
+        </Link>
+      </div>
+      {active.length === 0 ? (
+        <EmptyState
+          icon={Target}
+          title={t.home.noObjectives}
+          className="py-4"
+          action={
+            <Button variant="secondary" size="sm" onClick={() => openObjective(null)}>
+              <Plus className="size-4" aria-hidden />
+              {t.home.addObjective}
+            </Button>
+          }
+        />
+      ) : (
+        <div className="flex flex-col">
+          {active.slice(0, 3).map((o) => (
+            <ObjectiveRow key={o.id} objective={o} compact />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecentCard() {
   const q = useTransactions({ limit: 5 });
   return (
@@ -306,6 +346,7 @@ export function HomeView() {
         <NextCountdown />
         <TodayTodos />
         <HabitsCard />
+        <ObjectivesCard />
         <GoalsCard />
       </div>
       <RecentCard />

@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   Settings,
   SquareCheckBig,
+  Target,
   Timer,
   Zap,
   type LucideIcon,
@@ -20,6 +21,7 @@ export const MODULES: NavItem[] = [
   { href: "/countdowns", label: t.nav.countdowns, icon: Timer },
   { href: "/todos", label: t.nav.todos, icon: SquareCheckBig },
   { href: "/habits", label: t.nav.habits, icon: Activity },
+  { href: "/objectives", label: t.nav.objectives, icon: Target },
   { href: "/notes", label: t.nav.notes, icon: FileText },
   { href: "/bills", label: t.nav.bills, icon: Zap },
 ];
@@ -31,7 +33,7 @@ const TAB_MODULES: NavItem[] = [
   MODULES[0],
   MODULES[1],
   MODULES[2],
-  { ...MODULES[6], label: t.nav.billsShort },
+  { ...MODULES.find((m) => m.href === "/bills")!, label: t.nav.billsShort },
 ];
 
 export const MORE_MODULES = MODULES.filter((m) => !TAB_MODULES.some((tab) => tab.href === m.href));
