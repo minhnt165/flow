@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_VERSION: buildVersion(),
     NEXT_PUBLIC_APP_COMMIT: buildCommit(),
   },
+  // Nút "N" góc dưới trái khi chạy dev đè lên tab Trang chủ của thanh tab điện thoại (5 tab).
+  // Overlay báo lỗi vẫn hiện khi có lỗi.
+  devIndicators: false,
   experimental: {
     // Nhúng CSS vào <head> thay vì file riêng: bỏ request chặn render (Lighthouse mobile).
     inlineCss: true,
