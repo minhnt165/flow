@@ -11,7 +11,7 @@ export function MobileTabs() {
   return (
     <nav
       aria-label={t.nav.mobileLabel}
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 gap-1 border-t border-surface-2 bg-surface px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 gap-1 border-t border-surface-2 bg-surface px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] md:hidden"
     >
       {MOBILE_TABS.map((tab) => {
         const active = tab.href === "/more" ? isMoreActive(pathname) : isActive(pathname, tab.href);

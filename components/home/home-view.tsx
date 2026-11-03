@@ -21,14 +21,14 @@ import { TodoRow } from "@/components/todos/todo-row";
 import { sortOpen } from "@/components/todos/todos-view";
 import { Button } from "@/components/ui/button";
 import { useCountdowns } from "@/hooks/use-countdowns";
-import { useGoals } from "@/hooks/use-funds";
+import { useFunds, useGoals } from "@/hooks/use-funds";
 import { useHabits } from "@/hooks/use-habits";
 import { useProfile } from "@/hooks/use-profile";
 import { useTodos } from "@/hooks/use-todos";
 import { useTransactions } from "@/hooks/use-transactions";
 import { tone } from "@/lib/colors";
 import { APP_TZ, formatLongDate, localDate } from "@/lib/dates";
-import { formatMillions } from "@/lib/money";
+import { formatMillions, formatNumber, formatVND } from "@/lib/money";
 import { t } from "@/messages/vi";
 import { useUi } from "@/stores/ui";
 
@@ -79,6 +79,42 @@ function NextCountdown() {
         <span className="mt-1 text-[11px] text-muted-foreground">{t.countdowns.daysLeft}</span>
       </ProgressRing>
     </Link>
+  );
+}
+
+/** Tổng số dư mọi quỹ đang dùng + vài quỹ nhiều tiền nhất. */
+function FundsTotalCard() {
+  const q = useFunds();
+  if (q.isLoading) return <CardSkeleton />;
+  const list = q.data ?? [];
+  const total = list.reduce((s, f) => s + f.balance, 0);
+  const top = [...list].sort((a, b) => b.balance - a.balance).slice(0, 4);
+  return (
+    <div className="flex flex-col gap-3 card p-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="m-0 truncate text-[15px] font-semibold">
+          {t.funds.totalBalance(list.length)}
+        </h2>
+        <Link href="/expenses/funds" className="shrink-0 text-[13px] font-medium no-underline">
+          {t.home.seeAll}
+        </Link>
+      </div>
+      <div className="flex items-baseline gap-1.5">
+        <span className="num-xl text-[34px]">{formatNumber(total)}</span>
+        <span className="font-display text-lg font-bold">₫</span>
+      </div>
+      {top.map((f) => (
+        <Link
+          key={f.id}
+          href={`/expenses/funds/${f.id}`}
+          className="flex items-center gap-3 py-0.5 text-text no-underline hover:text-text"
+        >
+          <IconTile icon={f.icon} color={f.color} size={32} />
+          <span className="min-w-0 grow truncate text-sm font-medium">{f.name}</span>
+          <span className="shrink-0 text-sm text-muted-foreground">{formatVND(f.balance)}</span>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -266,6 +302,7 @@ export function HomeView() {
       />
       <div className="relative grid grid-cols-1 gap-5 md:grid-cols-[repeat(auto-fit,minmax(min(300px,100%),1fr))]">
         <BudgetHighlight />
+        <FundsTotalCard />
         <NextCountdown />
         <TodayTodos />
         <HabitsCard />

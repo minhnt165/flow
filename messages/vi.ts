@@ -17,6 +17,7 @@ export const vi = {
     habits: "Thói quen",
     notes: "Ghi chú",
     bills: "Hoá đơn định kỳ",
+    billsShort: "Hoá đơn",
     settings: "Cài đặt",
     more: "Khác",
     account: "Tài khoản",

@@ -26,10 +26,18 @@ export const MODULES: NavItem[] = [
 
 export const SETTINGS_ITEM: NavItem = { href: "/settings", label: t.nav.settings, icon: Settings };
 
-export const MOBILE_TABS: NavItem[] = [
+/** Module có tab riêng trên điện thoại; còn lại nằm trong tab "Khác". */
+const TAB_MODULES: NavItem[] = [
   MODULES[0],
   MODULES[1],
   MODULES[2],
+  { ...MODULES[6], label: t.nav.billsShort },
+];
+
+export const MORE_MODULES = MODULES.filter((m) => !TAB_MODULES.some((tab) => tab.href === m.href));
+
+export const MOBILE_TABS: NavItem[] = [
+  ...TAB_MODULES,
   { href: "/more", label: t.nav.more, icon: LayoutGrid },
 ];
 
@@ -40,5 +48,5 @@ export function isActive(pathname: string, href: string) {
 
 /** Tab "Khác" sáng khi đang ở module không có tab riêng. */
 export function isMoreActive(pathname: string) {
-  return !MOBILE_TABS.slice(0, 3).some((tab) => isActive(pathname, tab.href));
+  return !TAB_MODULES.some((tab) => isActive(pathname, tab.href));
 }
