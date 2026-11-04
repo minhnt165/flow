@@ -7,7 +7,7 @@ import { FormAlert } from "@/components/common/field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDeleteNote, useSaveNote } from "@/hooks/use-notes";
-import { formatDateTime } from "@/lib/dates";
+import { formatRelativeTime } from "@/lib/dates";
 import type { Note } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
@@ -121,7 +121,7 @@ function NoteForm({ editing }: { editing: Note | null }) {
         </Button>
         {editing && (
           <span className="text-[11px] text-dim">
-            {t.notes.updatedAt(formatDateTime(editing.updated_at))}
+            {t.notes.updatedAt(formatRelativeTime(editing.updated_at))}
           </span>
         )}
       </div>

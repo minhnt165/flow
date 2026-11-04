@@ -12,10 +12,10 @@ import {
   addMonths,
   APP_TZ,
   daysBetween,
-  formatDateTime,
   formatDayMonth,
   formatMonth,
   formatMonthTick,
+  formatRelativeTime,
   localDate,
 } from "@/lib/dates";
 import { formatCompact, formatNumber, formatVND } from "@/lib/money";
@@ -466,7 +466,7 @@ function TopCard({ txs }: { txs: Transaction[] }) {
                     {x.note || cat?.name || t.expenses.untitled.expense}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {formatDateTime(x.occurred_at)}
+                    {formatRelativeTime(x.occurred_at)}
                     {cat && ` · ${cat.name}`}
                   </span>
                 </span>

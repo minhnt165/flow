@@ -11,7 +11,7 @@ import { useLookups } from "@/hooks/use-lookups";
 import { useMonth } from "@/hooks/use-month";
 import { useMonthSummary, useTransactions } from "@/hooks/use-transactions";
 import { tone } from "@/lib/colors";
-import { formatDateTime, formatMonth } from "@/lib/dates";
+import { formatMonth, formatRelativeTime } from "@/lib/dates";
 import { formatMillions, formatNumber, formatSigned, formatVND } from "@/lib/money";
 import type { FundMonth, FundWithBalance, GoalProgress } from "@/lib/supabase/types";
 import { t } from "@/messages/vi";
@@ -203,7 +203,7 @@ function IncomeCard() {
               <span className="flex min-w-0 grow flex-col gap-[3px]">
                 <span className="truncate text-sm font-medium">{tx.note || cat?.name}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {formatDateTime(tx.occurred_at)}{" "}
+                  {formatRelativeTime(tx.occurred_at)}{" "}
                   {t.funds.into(fundById.get(tx.fund_id)?.name ?? "—")}
                 </span>
               </span>
@@ -257,7 +257,7 @@ function TransfersCard() {
               </span>
               <span className="truncate text-xs text-muted-foreground">
                 {[
-                  formatDateTime(tx.occurred_at),
+                  formatRelativeTime(tx.occurred_at),
                   tx.source === "auto" ? t.funds.autoAfterSalary : tx.note,
                 ]
                   .filter(Boolean)

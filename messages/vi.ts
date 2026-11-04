@@ -723,7 +723,8 @@ export const vi = {
     untitled: "Ghi chú không tiêu đề",
     pinned: "Đã ghim",
     sections: { pinned: "Đã ghim", others: "Còn lại" },
-    updatedAt: (when: string) => `Sửa ${when}`,
+    // "Sửa vừa xong", "Sửa 5 phút trước", "Sửa hôm qua · 12:31"
+    updatedAt: (when: string) => `Sửa ${when.charAt(0).toLowerCase()}${when.slice(1)}`,
     empty: "Chưa có ghi chú nào.",
     emptyBody:
       "Lưu nhanh mật khẩu wifi, danh sách mua sắm, ý tưởng… Ghim những gì hay mở lên đầu, tìm không cần gõ dấu.",

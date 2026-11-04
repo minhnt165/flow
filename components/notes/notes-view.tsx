@@ -6,7 +6,7 @@ import { CardSkeleton, EmptyState, ErrorState } from "@/components/common/states
 import { PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/hooks/use-notes";
-import { formatDateTime } from "@/lib/dates";
+import { formatRelativeTime } from "@/lib/dates";
 import type { Note } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { t } from "@/messages/vi";
@@ -54,7 +54,7 @@ function NoteCard({ note }: { note: Note }) {
         </span>
       )}
       <span className="mt-auto pt-1 text-[11px] text-dim">
-        {t.notes.updatedAt(formatDateTime(note.updated_at))}
+        {t.notes.updatedAt(formatRelativeTime(note.updated_at))}
       </span>
     </button>
   );
