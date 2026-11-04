@@ -4,7 +4,15 @@ import { Receipt, Search } from "lucide-react";
 import { IconTile } from "@/components/common/icon-tile";
 import { EmptyState, ErrorState, RowsSkeleton } from "@/components/common/states";
 import { useLookups } from "@/hooks/use-lookups";
-import { addDays, APP_TZ, formatDateTime, formatDayMonth, localDate, localTime } from "@/lib/dates";
+import { useNow } from "@/hooks/use-now";
+import {
+  addDays,
+  APP_TZ,
+  formatDayMonth,
+  formatRelativeTime,
+  localDate,
+  localTime,
+} from "@/lib/dates";
 import { formatNumber, formatSigned } from "@/lib/money";
 import type { Category, FundWithBalance, Transaction } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
@@ -95,6 +103,7 @@ export function TransactionList({
 }) {
   const l = useLookups();
   const editTx = useUi((s) => s.editTx);
+  const now = useNow();
 
   if (isError) return <ErrorState onRetry={onRetry} />;
   if (isLoading || l.isLoading) return <RowsSkeleton />;
@@ -113,7 +122,7 @@ export function TransactionList({
   const open = (tx: Transaction) => {
     if (!tx.id.startsWith("optimistic-")) editTx(tx);
   };
-  const today = localDate(new Date(), APP_TZ);
+  const today = localDate(now, APP_TZ);
   const groups: { day: string; items: Transaction[] }[] = [];
   for (const tx of transactions) {
     const day = localDate(new Date(tx.occurred_at), APP_TZ);
@@ -141,7 +150,15 @@ export function TransactionList({
                   <span className="flex min-w-0 grow flex-col gap-[3px]">
                     <span className="truncate text-[15px] font-medium">{d.title}</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      {[localTime(new Date(tx.occurred_at), APP_TZ), d.category, d.fund, d.source]
+                      {[
+                        // Tiêu đề nhóm đã có ngày: hôm nay ghi "x phút/giờ trước", ngày khác chỉ ghi giờ.
+                        g.day === today
+                          ? formatRelativeTime(tx.occurred_at, now)
+                          : localTime(new Date(tx.occurred_at), APP_TZ),
+                        d.category,
+                        d.fund,
+                        d.source,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>
@@ -212,7 +229,7 @@ export function TransactionList({
                     {d.fund}
                   </td>
                   <td className="border-b border-surface-2 py-3.5 pr-3 whitespace-nowrap text-muted-foreground">
-                    {formatDateTime(tx.occurred_at)}
+                    {formatRelativeTime(tx.occurred_at, now)}
                   </td>
                   <td
                     className={cn(

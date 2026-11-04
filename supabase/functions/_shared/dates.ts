@@ -153,6 +153,27 @@ export function formatDateTime(iso: string, tz = APP_TZ): string {
   return `${pad(p.day)}/${pad(p.month)} · ${pad(p.hour)}:${pad(p.minute)}`;
 }
 
+/**
+ * Thời điểm giao dịch dạng dễ đọc, so với `now`:
+ * "Vừa xong" · "5 phút trước" · "3 giờ trước" (trong hôm nay) · "Hôm qua · 12:31"
+ * · "30/10 · 12:31" (cùng năm) · "30/10/2025 · 12:31". Thời điểm ở tương lai giữ dạng ngày giờ.
+ */
+export function formatRelativeTime(iso: string, now: Date = new Date(), tz = APP_TZ): string {
+  const at = new Date(iso);
+  const diffMin = Math.floor((now.getTime() - at.getTime()) / 60_000);
+  const day = localDate(at, tz);
+  const today = localDate(now, tz);
+  if (diffMin >= 0 && day === today) {
+    if (diffMin < 1) return "Vừa xong";
+    if (diffMin < 60) return `${diffMin} phút trước`;
+    return `${Math.floor(diffMin / 60)} giờ trước`;
+  }
+  const time = localTime(at, tz);
+  if (day === addDays(today, -1)) return `Hôm qua · ${time}`;
+  if (day.slice(0, 4) === today.slice(0, 4)) return `${formatDayMonth(day)} · ${time}`;
+  return `${formatDate(day)} · ${time}`;
+}
+
 /** "Tháng 10 · 2026" */
 export function formatMonth(day: string): string {
   const { y, m } = dayParts(day);

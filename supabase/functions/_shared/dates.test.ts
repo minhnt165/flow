@@ -5,6 +5,7 @@ import {
   formatDateTime,
   formatLongDate,
   formatMonth,
+  formatRelativeTime,
   formatWeekdayShort,
   localDate,
   localTime,
@@ -45,5 +46,20 @@ describe("ngày giờ theo giờ Việt Nam", () => {
   it("cộng tháng, đếm ngày", () => {
     expect(addMonths("2026-12-15", 1)).toBe("2027-01-01");
     expect(daysBetween("2026-10-30", "2027-02-06")).toBe(99);
+  });
+
+  it("thời gian tương đối của giao dịch", () => {
+    // Bây giờ: 04/11/2026 14:30 giờ VN.
+    const now = new Date("2026-11-04T07:30:00Z");
+    expect(formatRelativeTime("2026-11-04T07:29:40Z", now)).toBe("Vừa xong");
+    expect(formatRelativeTime("2026-11-04T07:25:00Z", now)).toBe("5 phút trước");
+    expect(formatRelativeTime("2026-11-04T04:10:00Z", now)).toBe("3 giờ trước");
+    // 00:05 hôm nay vẫn là "giờ trước", 23:50 hôm qua là "Hôm qua".
+    expect(formatRelativeTime("2026-11-03T17:05:00Z", now)).toBe("14 giờ trước");
+    expect(formatRelativeTime("2026-11-03T16:50:00Z", now)).toBe("Hôm qua · 23:50");
+    expect(formatRelativeTime("2026-10-30T05:31:00Z", now)).toBe("30/10 · 12:31");
+    expect(formatRelativeTime("2025-12-30T05:31:00Z", now)).toBe("30/12/2025 · 12:31");
+    // Tương lai: giữ ngày giờ.
+    expect(formatRelativeTime("2026-11-04T09:00:00Z", now)).toBe("04/11 · 16:00");
   });
 });
